@@ -1,0 +1,7 @@
+.book-card {
+  transition: transform 0.15s ease-in-out;
+}
+
+.book-card:hover {
+  transform: scale(1.025);
+}

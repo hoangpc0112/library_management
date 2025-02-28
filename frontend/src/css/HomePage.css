@@ -1,0 +1,25 @@
+.bg-custom {
+  background-image: url("../assets/images/background.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 50vh;
+  position: relative;
+  color: white;
+}
+
+.bg-custom::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.bg-custom .content {
+  position: relative;
+  z-index: 2;
+}
