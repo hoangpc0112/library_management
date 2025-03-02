@@ -43,10 +43,10 @@ const AboutUsPage = () => {
                         <div className="card border-3">
                           <div className="card-body p-4">
                             <h3 className="display-5 fw-bold text-primary text-center mb-2">
-                              5000+
+                              500+
                             </h3>
                             <p className="fw-bold text-center m-0">
-                              Tài liệu & Giáo trình
+                              Tài liệu & Cuốn sách
                             </p>
                           </div>
                         </div>

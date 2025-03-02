@@ -14,3 +14,11 @@ class Book(Base):
     average_rating = Column(DOUBLE_PRECISION, nullable=False)
     ratings_count = Column(Integer, nullable=False)
     num_pages = Column(Integer, nullable=False)
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String, nullable=False, unique=True)
+    password = Column(String, nullable=False)

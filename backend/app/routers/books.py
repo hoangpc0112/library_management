@@ -3,36 +3,36 @@ from fastapi import Depends, HTTPException, status, APIRouter
 from sqlalchemy.orm import Session
 from ..database import get_db
 
-router = APIRouter(prefix="/items", tags=["Items"])
+router = APIRouter(prefix="/book", tags=["Book"])
 
 
-@router.get("/", response_model=list[schemas.Item])
-def get_all(db: Session = Depends(get_db), sub=Depends(oauth2.get_current_user)):
-    return db.query(models.Item).all()
+@router.get("/", response_model=list[schemas.Book])
+def get_all(db: Session = Depends(get_db), page_num: int = 1, page_size: int = 24):
+    return db.query(models.Book).offset((page_num - 1) * page_size).limit(page_size).all()
 
 
-@router.get("/{id}", response_model=schemas.Item)
-def get_one(id: int, db: Session = Depends(get_db), sub=Depends(oauth2.get_current_user)):
-    item = db.query(models.Item).filter(models.Item.id == id).first()
+@router.get("/{id}", response_model=schemas.Book)
+def get_one(id: int, db: Session = Depends(get_db)):
+    book = db.query(models.Book).filter(models.Book.id == id).first()
 
-    if not item:
+    if not book:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Item with id {id} not found."
+            detail=f"Book with id {id} not found."
         )
 
-    return item
+    return book
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def add(item: schemas.CreateItem, db: Session = Depends(get_db), sub=Depends(oauth2.get_current_user)):
-    db.add(models.Item(**item.dict()))
+def add(book: schemas.BookCreate, db: Session = Depends(get_db)):
+    db.add(models.Book(**book.dict()))
     db.commit()
-    return {"message": "Item added successfully."}
+    return {"message": "Book added successfully."}
 
 
 @router.put("/{id}")
-def update(id: int, item: schemas.UpdateItem, db: Session = Depends(get_db), sub=Depends(oauth2.get_current_user)):
+def update(id: int, item: schemas.UpdateItem, db: Session = Depends(get_db)):
     query = db.query(models.Item).filter(models.Item.id == id)
 
     if not query.first():
@@ -48,7 +48,7 @@ def update(id: int, item: schemas.UpdateItem, db: Session = Depends(get_db), sub
 
 
 @router.delete("/{id}")
-def delete(id: int, db: Session = Depends(get_db), sub=Depends(oauth2.get_current_user)):
+def delete(id: int, db: Session = Depends(get_db)):
     query = db.query(models.Item).filter(models.Item.id == id)
 
     if not query.first():

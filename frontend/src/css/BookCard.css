@@ -1,7 +1,151 @@
-.book-card {
-  transition: transform 0.15s ease-in-out;
+.book-cover-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  aspect-ratio: 2/3;
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
-.book-card:hover {
-  transform: scale(1.025);
+.book-cover-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+}
+
+.book-cover {
+  width: 100%;
+  height: 100%;
+  background-color: #f0f0f0;
+}
+
+.book-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.book-cover-container:hover .book-image {
+  transform: scale(1.05);
+}
+
+.book-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.85) 0%,
+    rgba(0, 0, 0, 0.4) 80%,
+    transparent 100%
+  );
+  color: white;
+  padding: 20px 15px;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.book-cover-container:hover .book-overlay {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.book-info {
+  text-align: left;
+}
+
+.book-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.book-author {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-bottom: 15px;
+  font-style: italic;
+}
+
+.book-details {
+  margin-bottom: 15px;
+  font-size: 0.85rem;
+}
+
+.book-year,
+.book-rating {
+  margin-bottom: 6px;
+}
+
+.detail-label {
+  opacity: 0.7;
+  margin-right: 5px;
+}
+
+.stars-container {
+  display: inline-flex;
+  align-items: center;
+}
+
+.star {
+  color: #ccc;
+  margin-right: 2px;
+}
+
+.star.filled {
+  color: #ffce00;
+}
+
+.rating-number {
+  margin-left: 5px;
+  opacity: 0.8;
+  font-size: 0.8rem;
+}
+
+.view-details {
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  transition: background-color 0.2s ease;
+  text-align: center;
+}
+
+.view-details:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 767px) {
+  .book-overlay {
+    padding: 15px 10px;
+  }
+
+  .book-title {
+    font-size: 0.9rem;
+  }
+
+  .book-author {
+    font-size: 0.8rem;
+    margin-bottom: 10px;
+  }
+
+  .book-details {
+    font-size: 0.75rem;
+    margin-bottom: 10px;
+  }
 }

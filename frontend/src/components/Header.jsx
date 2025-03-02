@@ -18,7 +18,7 @@ function Header() {
           </Link>
           <li className="nav-item">
             <Link className="nav-link" to="/">
-              <i className="fas fa-home"></i> Thư viện PTIT
+              <i className="fas fa-home"></i> Trang chủ
             </Link>
           </li>
           <li className="nav-item">

@@ -1,5 +1,4 @@
 from typing import Optional
-from unittest.mock import Base
 from pydantic import BaseModel, EmailStr
 
 
@@ -57,3 +56,21 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: Optional[str] = None
+
+
+class BookCreate(BaseModel):
+    title: str
+    author: str
+    publisher: str
+    image_url: str
+    published_year: int
+    average_rating: float
+    ratings_count: int
+    num_pages: int
+
+
+class Book(BookCreate):
+    id: int
+
+    class Config:
+        from_attributes = True

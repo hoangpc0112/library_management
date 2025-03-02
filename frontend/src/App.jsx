@@ -7,11 +7,11 @@ import {
 import HomePage from "./pages/HomePage";
 import BookPage from "./pages/BookPage";
 import BorrowedPage from "./pages/BorrowedPage";
-import UserLayout from "./layouts/UserLayout";
-import UserPage, { UserLoader } from "./pages/UserPage";
 import RootLayout from "./layouts/RootLayout";
 import AboutUsPage from "./pages/AboutUsPage";
 import ProfilePage from "./pages/ProfilePage";
+import SingleBook from "./pages/SingleBook";
+
 import "./css/App.css";
 
 function App() {
@@ -20,12 +20,10 @@ function App() {
       <Route path="/" element={<RootLayout />}>
         <Route index element={<HomePage />} />
         <Route path="book" element={<BookPage />} />
+        <Route path="book/:id" element={<SingleBook />} />
         <Route path="borrowed" element={<BorrowedPage />} />
         <Route path="about-us" element={<AboutUsPage />} />
         <Route path="profile" element={<ProfilePage />} />
-        <Route path="user" element={<UserLayout />}>
-          <Route index element={<UserPage />} loader={UserLoader} />
-        </Route>
       </Route>
     )
   );

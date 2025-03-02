@@ -2,7 +2,12 @@ function Footer() {
   return (
     <footer
       className="py-5 mt-5 border-top"
-      style={{ paddingLeft: "15%", paddingRight: "15%" }}
+      style={{
+        paddingLeft: "15%",
+        paddingRight: "15%",
+        marginTop: "auto",
+        width: "100%",
+      }}
     >
       <div className="row">
         <div className="col-12 col-md">

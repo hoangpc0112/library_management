@@ -1,86 +1,129 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import "../css/BookCard.css";
 
-const books = [
-  {
-    id: 1,
-    title: "Classical Mythology",
-    date: "11 Nov 2024",
-    img: "http://images.amazon.com/images/P/0195153448.01.LZZZZZZZ.jpg",
-  },
-  {
-    id: 2,
-    title: "Modern History",
-    date: "15 Dec 2024",
-    img: "http://images.amazon.com/images/P/0195153448.01.LZZZZZZZ.jpg",
-  },
-  {
-    id: 3,
-    title: "Science & Nature",
-    date: "22 Jan 2025",
-    img: "http://images.amazon.com/images/P/0195153448.01.LZZZZZZZ.jpg",
-  },
-  {
-    id: 4,
-    title: "Ancient Civilizations",
-    date: "5 Mar 2025",
-    img: "http://images.amazon.com/images/P/0195153448.01.LZZZZZZZ.jpg",
-  },
-  {
-    id: 5,
-    title: "Philosophy & Thought",
-    date: "18 Apr 2025",
-    img: "http://images.amazon.com/images/P/0195153448.01.LZZZZZZZ.jpg",
-  },
-  {
-    id: 6,
-    title: "Fantasy World",
-    date: "30 May 2025",
-    img: "http://images.amazon.com/images/P/0195153448.01.LZZZZZZZ.jpg",
-  },
-  {
-    id: 7,
-    title: "Science Fiction",
-    date: "12 Jul 2025",
-    img: "http://images.amazon.com/images/P/0195153448.01.LZZZZZZZ.jpg",
-  },
-  {
-    id: 8,
-    title: "Mystery & Thriller",
-    date: "25 Aug 2025",
-    img: "http://images.amazon.com/images/P/0195153448.01.LZZZZZZZ.jpg",
-  },
-  {
-    id: 9,
-    title: "Romance & Drama",
-    date: "7 Oct 2025",
-    img: "http://images.amazon.com/images/P/0195153448.01.LZZZZZZZ.jpg",
-  },
-];
-
 function BookList() {
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get("http://127.0.0.1:8000/book/");
+        setBooks(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching books:", error);
+        setError("Không thể tải dữ liệu sách. Vui lòng thử lại sau.");
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="container text-center py-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Đang tải...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container text-center py-5">
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  const mockBookDetails = {
+    author: "Tác giả sẽ hiển thị ở đây",
+    published_year: "2024",
+    rating: 4.5,
+  };
+
   return (
-    <div className="container">
-      <div className="row">
-        <h2 className="mb-3 mt-3 display-5 text-center">Thư viện sách</h2>
-        {books.map((book) => (
-          <div key={book.id} className="book-card col-6 col-md-4 col-lg-2 p-2">
-            <Link to="#" className="text-decoration-none">
-              <div className="card rounded-3 overflow-hidden shadow-sm">
-                <img
-                  className="card-img-top img-fluid"
-                  loading="lazy"
-                  src={book.img}
-                  alt="Cover"
-                />
-                <div className="card-body text-center bg-white">
-                  <h2 className="card-title h6 text-dark mb-1">{book.title}</h2>
-                  <p className="text-dark small mb-0">{book.date}</p>
-                </div>
+    <div className="container py-5">
+      <div className="row g-4">
+        {books.length === 0 ? (
+          <p className="text-center fs-5">Không có sách nào trong thư viện.</p>
+        ) : (
+          books.map((book) => {
+            const bookDetails = {
+              ...book,
+              author: book.author || mockBookDetails.author,
+              published_year:
+                book.published_year || mockBookDetails.published_year,
+              rating: book.rating || mockBookDetails.rating,
+            };
+
+            return (
+              <div
+                key={book.id}
+                className="book-card col-6 col-md-4 col-xl-3 col-xxl-2"
+              >
+                <Link to={`/book/${book.id}`} className="text-decoration-none">
+                  <div className="book-cover-container">
+                    <div className="book-cover">
+                      <img
+                        src={book.image_url}
+                        alt={book.title}
+                        loading="lazy"
+                        className="book-image"
+                      />
+                    </div>
+
+                    <div className="book-overlay">
+                      <div className="book-info">
+                        <h3 className="book-title">{book.title}</h3>
+                        <div className="book-author">{bookDetails.author}</div>
+
+                        <div className="book-details">
+                          <div className="book-year">
+                            <span className="detail-label">Năm xuất bản:</span>{" "}
+                            {bookDetails.published_year}
+                          </div>
+
+                          <div className="book-rating">
+                            <span className="detail-label">Đánh giá:</span>
+                            <div className="stars-container">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <span
+                                  key={star}
+                                  className={`star ${
+                                    star <= bookDetails.average_rating
+                                      ? "filled"
+                                      : ""
+                                  }`}
+                                >
+                                  ★
+                                </span>
+                              ))}
+                              <span className="rating-number">
+                                ({bookDetails.average_rating})
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="view-details">Xem chi tiết</div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
               </div>
-            </Link>
-          </div>
-        ))}
+            );
+          })
+        )}
       </div>
     </div>
   );
