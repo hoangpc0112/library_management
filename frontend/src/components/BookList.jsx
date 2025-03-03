@@ -1,19 +1,28 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import "../css/BookCard.css";
+import Pagination from "./Pagination";
 
 function BookList() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const currentPage = parseInt(queryParams.get("page")) || 1;
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://127.0.0.1:8000/book/");
-        setBooks(response.data);
+        const response = await axios.get(
+          `http://127.0.0.1:8000/book?page=${currentPage}`
+        );
+        setBooks(response.data.books);
+        setTotalPages(response.data.total_pages);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching books:", error);
@@ -23,7 +32,7 @@ function BookList() {
     };
 
     fetchBooks();
-  }, []);
+  }, [currentPage]);
 
   if (loading) {
     return (
@@ -45,12 +54,6 @@ function BookList() {
     );
   }
 
-  const mockBookDetails = {
-    author: "Tác giả sẽ hiển thị ở đây",
-    published_year: "2024",
-    rating: 4.5,
-  };
-
   return (
     <div className="container py-5">
       <div className="row g-4">
@@ -58,14 +61,6 @@ function BookList() {
           <p className="text-center fs-5">Không có sách nào trong thư viện.</p>
         ) : (
           books.map((book) => {
-            const bookDetails = {
-              ...book,
-              author: book.author || mockBookDetails.author,
-              published_year:
-                book.published_year || mockBookDetails.published_year,
-              rating: book.rating || mockBookDetails.rating,
-            };
-
             return (
               <div
                 key={book.id}
@@ -85,12 +80,12 @@ function BookList() {
                     <div className="book-overlay">
                       <div className="book-info">
                         <h3 className="book-title">{book.title}</h3>
-                        <div className="book-author">{bookDetails.author}</div>
+                        <div className="book-author">{book.author}</div>
 
                         <div className="book-details">
                           <div className="book-year">
                             <span className="detail-label">Năm xuất bản:</span>{" "}
-                            {bookDetails.published_year}
+                            {book.published_year}
                           </div>
 
                           <div className="book-rating">
@@ -100,16 +95,14 @@ function BookList() {
                                 <span
                                   key={star}
                                   className={`star ${
-                                    star <= bookDetails.average_rating
-                                      ? "filled"
-                                      : ""
+                                    star <= book.average_rating ? "filled" : ""
                                   }`}
                                 >
                                   ★
                                 </span>
                               ))}
                               <span className="rating-number">
-                                ({bookDetails.average_rating})
+                                ({book.average_rating})
                               </span>
                             </div>
                           </div>
@@ -125,6 +118,7 @@ function BookList() {
           })
         )}
       </div>
+      <Pagination currentPage={currentPage} totalPages={totalPages} />
     </div>
   );
 }

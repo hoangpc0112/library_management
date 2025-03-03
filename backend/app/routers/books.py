@@ -6,9 +6,20 @@ from ..database import get_db
 router = APIRouter(prefix="/book", tags=["Book"])
 
 
-@router.get("/", response_model=list[schemas.Book])
+@router.get("/")
 def get_all(db: Session = Depends(get_db), page_num: int = 1, page_size: int = 24):
-    return db.query(models.Book).offset((page_num - 1) * page_size).limit(page_size).all()
+    total_books = db.query(models.Book).count()
+    total_pages = (total_books + page_size -
+                   1) // page_size
+    books = db.query(models.Book).offset(
+        (page_num - 1) * page_size).limit(page_size).all()
+
+    return {
+        "total_books": total_books,
+        "total_pages": total_pages,
+        "current_page": page_num,
+        "books": books
+    }
 
 
 @router.get("/{id}", response_model=schemas.Book)

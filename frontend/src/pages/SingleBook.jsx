@@ -98,10 +98,9 @@ const SingleBook = () => {
               <p className="mb-2">
                 <strong>{book.title}</strong> là một cuốn sách dài{" "}
                 {book.num_pages} trang được xuất bản bởi {book.publisher} vào
-                năm {book.published_year}. Nó được viết bởi {book.author}
-                và đã nhận được đánh giá trung bình là {
-                  book.average_rating
-                } từ {book.ratings_count} độc giả.
+                năm {book.published_year}. Nó được viết bởi {book.author} và đã
+                nhận được đánh giá trung bình là {book.average_rating}/5 từ{" "}
+                {book.ratings_count} độc giả.
               </p>
               <p>
                 Cuốn sách này hoàn hảo cho những độc giả yêu thích các tác phẩm

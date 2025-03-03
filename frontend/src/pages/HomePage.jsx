@@ -9,7 +9,7 @@ const HomePage = () => {
           <img
             className="d-block mx-auto mb-4"
             src="https://cdn-icons-png.flaticon.com/512/5402/5402751.png"
-            alt=""
+            alt="Book icon"
             width="72"
             height="57"
           />
