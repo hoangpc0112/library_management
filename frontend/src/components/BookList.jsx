@@ -19,7 +19,7 @@ function BookList() {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://127.0.0.1:8000/book?page=${currentPage}`
+          `http://localhost:8000/book/?page=${currentPage}`
         );
         setBooks(response.data.books);
         setTotalPages(response.data.total_pages);

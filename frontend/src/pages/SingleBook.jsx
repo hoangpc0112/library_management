@@ -53,6 +53,7 @@ const SingleBook = () => {
 
   return (
     <div className="container my-4">
+      <title>{book.title}</title>
       <div className="card border-0 shadow-sm">
         <div className="card-body p-4">
           <div className="row g-4">

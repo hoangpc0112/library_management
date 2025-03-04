@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
+import CountUp from "react-countup";
 
 const AboutUsPage = () => {
   return (
     <div>
+      <title>Về chúng tôi</title>
       <section className="py-3 py-md-5 py-xl-8">
         <div className="container">
           <div className="row justify-content-md-center">
@@ -43,10 +45,10 @@ const AboutUsPage = () => {
                         <div className="card border-3">
                           <div className="card-body p-4">
                             <h3 className="display-5 fw-bold text-primary text-center mb-2">
-                              500+
+                              <CountUp start={0} end={500} duration={3} />+
                             </h3>
                             <p className="fw-bold text-center m-0">
-                              Tài liệu & Cuốn sách
+                              Sách và tài liệu
                             </p>
                           </div>
                         </div>
@@ -55,7 +57,7 @@ const AboutUsPage = () => {
                         <div className="card border-3">
                           <div className="card-body p-4">
                             <h3 className="display-5 fw-bold text-primary text-center mb-2">
-                              1000+
+                              <CountUp start={0} end={1000} duration={3} />+
                             </h3>
                             <p className="fw-bold text-center m-0">
                               Sinh viên sử dụng mỗi năm

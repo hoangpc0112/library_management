@@ -12,6 +12,7 @@ export default function Login() {
 
   return (
     <div className="mt-5 d-flex justify-content-center align-items-center">
+      <title>Đăng nhập</title>
       <div className="p-4" style={{ width: "350px" }}>
         <img
           src={logo}

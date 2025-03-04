@@ -1,6 +1,7 @@
 const ProfilePage = () => {
   return (
     <section className="py-3 py-md-5 py-xl-8">
+      <title>Hồ sơ</title>
       <div className="container">
         <div className="row justify-content-md-center">
           <div className="col-12 col-md-10 col-lg-8 col-xl-7 col-xxl-6">
