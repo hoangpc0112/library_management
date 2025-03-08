@@ -30,3 +30,29 @@ def login(
     access_token = oauth2.create_access_token(data={"sub": user.email})
 
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=schemas.User)
+def register(
+    user: schemas.UserCreate,
+    db: Session = Depends(database.get_db)
+):
+    user_exists = db.query(models.User).filter(models.User.email == user.email).first()
+    if user_exists:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Email đã được sử dụng."
+        )
+
+    hashed_password = utils.hash_password(user.password)
+    user.password = hashed_password
+
+    new_user = models.User(
+        email=user.email,
+        password=hashed_password
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user

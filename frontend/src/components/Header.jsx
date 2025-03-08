@@ -1,8 +1,24 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 import logo from "../assets/images/logo.png";
+import Swal from "sweetalert2";
 
 function Header() {
+  const token = localStorage.getItem("token");
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    Swal.fire({
+      icon: "success",
+      title: "Đăng xuất thành công",
+      showConfirmButton: false,
+      timer: 1500,
+    });
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
   return (
     <nav className="navbar navbar-expand-md border-bottom">
       <div className="container">
@@ -39,34 +55,40 @@ function Header() {
           <li className="nav-item">
             <ThemeToggle />
           </li>
-          <div className="dropdown text-end d-flex align-items-center justify-content-center">
-            <a
-              href="#"
-              className="d-block link-body-emphasis text-decoration-none dropdown-toggle"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              <img
-                src="https://cdn4.iconfinder.com/data/icons/instagram-ui-twotone/48/Paul-18-512.png"
-                alt="avt"
-                width="32"
-                height="32"
-                className="rounded-circle"
-              />
-            </a>
-            <ul className="dropdown-menu text-small">
-              <li>
-                <Link className="dropdown-item" to="/profile">
-                  Hồ sơ
-                </Link>
-              </li>
-              <li>
-                <Link className="dropdown-item" to="/logout">
-                  Đăng xuất
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {token ? (
+            <div className="dropdown text-end d-flex align-items-center justify-content-center">
+              <a
+                href="#"
+                className="d-block link-body-emphasis text-decoration-none dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <img
+                  src="https://cdn4.iconfinder.com/data/icons/instagram-ui-twotone/48/Paul-18-512.png"
+                  alt="avt"
+                  width="32"
+                  height="32"
+                  className="rounded-circle"
+                />
+              </a>
+              <ul className="dropdown-menu text-small">
+                <li>
+                  <Link className="dropdown-item" to="/profile">
+                    Hồ sơ
+                  </Link>
+                </li>
+                <li>
+                  <button onClick={handleLogout} className="dropdown-item">
+                    Đăng xuất
+                  </button>
+                </li>
+              </ul>
+            </div>
+          ) : (
+            <Link className="nav-link" to="/login">
+              <i className="fas fa-sign-in-alt"></i> Đăng nhập
+            </Link>
+          )}
         </ul>
       </div>
     </nav>

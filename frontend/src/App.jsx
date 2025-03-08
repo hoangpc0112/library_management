@@ -14,6 +14,7 @@ import SingleBook from "./pages/SingleBook";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import "./css/App.css";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   const router = createBrowserRouter(
@@ -22,11 +23,13 @@ function App() {
         <Route index element={<HomePage />} />
         <Route path="book" element={<BookPage />} />
         <Route path="book/:id" element={<SingleBook />} />
-        <Route path="borrowed" element={<BorrowedPage />} />
         <Route path="about-us" element={<AboutUsPage />} />
-        <Route path="profile" element={<ProfilePage />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="borrowed" element={<BorrowedPage />} />
+        </Route>
       </Route>
     )
   );

@@ -1,13 +1,48 @@
 import { useState } from "react";
 import logo from "../assets/images/logo.png";
+import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Logging in with", { username, password });
+
+    const formData = new FormData();
+    formData.append("username", username);
+    formData.append("password", password);
+
+    axios
+      .post("http://localhost:8000/login", formData, {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      })
+      .then((res) => {
+        Swal.fire({
+          icon: "success",
+          title: "Đăng nhập thành công",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+        localStorage.setItem("token", res.data.access_token);
+        navigate("/");
+      })
+      .catch((err) => {
+        console.error("Login error:", err);
+        Swal.fire({
+          icon: "error",
+          title: "Đăng nhập thất bại",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      });
   };
 
   return (
@@ -50,6 +85,7 @@ export default function Login() {
                 type="checkbox"
                 className="form-check-input"
                 id="rememberMe"
+                checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
               />
               <label className="form-check-label" htmlFor="rememberMe">
@@ -65,9 +101,9 @@ export default function Login() {
           </button>
           <div className="text-center">
             <span>Chưa có tài khoản? </span>
-            <a href="#" className="text-primary text-decoration-none">
+            <Link to="/register" className="text-primary text-decoration-none">
               Đăng ký
-            </a>
+            </Link>
           </div>
         </form>
       </div>

@@ -7,17 +7,17 @@ router = APIRouter(prefix="/book", tags=["Book"])
 
 
 @router.get("/")
-def get_all(db: Session = Depends(get_db), page_num: int = 1, page_size: int = 24):
+def get_all(db: Session = Depends(get_db), page: int = 1):
     total_books = db.query(models.Book).count()
-    total_pages = (total_books + page_size -
-                   1) // page_size
+    total_pages = (total_books + 24 -
+                   1) // 24
     books = db.query(models.Book).offset(
-        (page_num - 1) * page_size).limit(page_size).all()
+        (page - 1) * 24).limit(24).all()
 
     return {
         "total_books": total_books,
         "total_pages": total_pages,
-        "current_page": page_num,
+        "current_page": page,
         "books": books
     }
 
