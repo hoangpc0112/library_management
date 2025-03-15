@@ -1,51 +1,25 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr
 
-
-class ItemBase(BaseModel):
-    name: str
-    price: float
-
-
-class Item(ItemBase):
-    id: int
-
-    class Config:
-        from_attributes = True
-
-
-class CreateItem(ItemBase):
-    pass
-
-
-class UpdateItem(ItemBase):
-    name: Optional[str] = None
-    price: Optional[float] = None
-
-
-class UserBase(BaseModel):
+class UserCreate(BaseModel):
     email: EmailStr
     password: str
+    full_name: str
+    is_admin: int = 0
+    msv: str
 
 
-class UserCreate(UserBase):
-    pass
-
-
-class UpdatePassword(UserBase):
-    password: str
-
-
-class User(BaseModel):
+class UserOut(BaseModel):
     email: EmailStr
-    id: int
+    full_name: str
+    msv: str
 
     class Config:
         from_attributes = True
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    msv: EmailStr
     password: str
 
 
@@ -55,7 +29,7 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-    email: Optional[str] = None
+    msv: Optional[str] = None
 
 
 class BookCreate(BaseModel):
@@ -69,8 +43,15 @@ class BookCreate(BaseModel):
     num_pages: int
 
 
-class Book(BookCreate):
-    id: int
+class BookOut(BaseModel):
+    title: str
+    author: str
+    publisher: str
+    image_url: str
+    published_year: int
+    average_rating: float
+    ratings_count: int
+    num_pages: int
 
     class Config:
         from_attributes = True

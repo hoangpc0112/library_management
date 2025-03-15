@@ -15,6 +15,10 @@ function BookList() {
   const currentPage = parseInt(queryParams.get("page")) || 1;
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentPage]);
+
+  useEffect(() => {
     const fetchBooks = async () => {
       try {
         setLoading(true);
@@ -36,7 +40,10 @@ function BookList() {
 
   if (loading) {
     return (
-      <div className="container text-center py-5">
+      <div
+        className="container text-center py-5"
+        style={{ minHeight: "100vh" }}
+      >
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Đang tải...</span>
         </div>
@@ -46,7 +53,10 @@ function BookList() {
 
   if (error) {
     return (
-      <div className="container text-center py-5">
+      <div
+        className="container text-center py-5"
+        style={{ minHeight: "100vh" }}
+      >
         <div className="alert alert-danger" role="alert">
           {error}
         </div>

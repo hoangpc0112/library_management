@@ -1,10 +1,15 @@
 import { Link } from "react-router-dom";
 import CountUp from "react-countup";
+import { useEffect } from "react";
 
 const AboutUsPage = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "Giới thiệu thư viện PTIT";
+  }, []);
+
   return (
     <div>
-      <title>Về chúng tôi</title>
       <section className="py-3 py-md-5 py-xl-8">
         <div className="container">
           <div className="row justify-content-md-center">

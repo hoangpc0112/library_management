@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 
@@ -7,6 +7,10 @@ const SingleBook = () => {
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -25,6 +29,14 @@ const SingleBook = () => {
 
     fetchBook();
   }, [id]);
+
+  useEffect(() => {
+    if (book?.title) {
+      document.title = book.title;
+    } else {
+      document.title = "Loading...";
+    }
+  }, [book?.title]);
 
   if (loading)
     return (
@@ -53,7 +65,6 @@ const SingleBook = () => {
 
   return (
     <div className="container my-4">
-      <title>{book.title}</title>
       <div className="card border-0 shadow-sm">
         <div className="card-body p-4">
           <div className="row g-4">

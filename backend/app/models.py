@@ -22,3 +22,6 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
+    full_name = Column(String, nullable=False)
+    is_admin = Column(Integer, nullable=False)
+    msv = Column(String, nullable=False, unique=True, index=True)

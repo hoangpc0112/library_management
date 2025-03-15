@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 import logo from "../assets/images/logo.png";
-import Swal from "sweetalert2";
 
 function Header() {
   const token = localStorage.getItem("token");
@@ -9,14 +8,12 @@ function Header() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    Swal.fire({
-      icon: "success",
-      title: "Đăng xuất thành công",
-      showConfirmButton: false,
-      timer: 1500,
-    });
-    localStorage.removeItem("token");
-    navigate("/login");
+    const confirmLogout = window.confirm("Đăng xuất khỏi tài khoản hiện tại ?");
+
+    if (confirmLogout) {
+      localStorage.removeItem("token");
+      navigate("/login");
+    }
   };
 
   return (

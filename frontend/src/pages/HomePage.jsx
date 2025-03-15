@@ -1,7 +1,13 @@
 import BookList from "../components/BookList";
 import "../css/HomePage.css";
+import { useEffect } from "react";
 
 const HomePage = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "Trang chủ - Thư viện PTIT";
+  }, []);
+
   return (
     <div>
       <div className="py-5 text-center bg-body-secondary bg-custom">

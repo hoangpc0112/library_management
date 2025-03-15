@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import logo from "../assets/images/logo.png";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
 
 export default function Login() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "Đăng nhập";
+  }, []);
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -25,30 +29,20 @@ export default function Login() {
         },
       })
       .then((res) => {
-        Swal.fire({
-          icon: "success",
-          title: "Đăng nhập thành công",
-          showConfirmButton: false,
-          timer: 1500,
-        });
+        alert("Đăng nhập thành công");
         localStorage.setItem("token", res.data.access_token);
         navigate("/");
       })
       .catch((err) => {
-        console.error("Login error:", err);
-        Swal.fire({
-          icon: "error",
-          title: "Đăng nhập thất bại",
-          showConfirmButton: false,
-          timer: 1500,
-        });
+        alert(
+          err.response?.data?.detail || "Đăng nhập thất bại, vui lòng thử lại."
+        );
       });
   };
 
   return (
-    <div className="mt-5 d-flex justify-content-center align-items-center">
-      <title>Đăng nhập</title>
-      <div className="p-4" style={{ width: "350px" }}>
+    <div className="mt-5 d-flex justify-content-center align-items-center position-relative">
+      <div className="p-4" style={{ width: "350px", zIndex: 2 }}>
         <img
           src={logo}
           alt="Logo"

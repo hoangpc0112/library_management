@@ -1,11 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import logo from "../assets/images/logo.png";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
-import Swal from "sweetalert2";
 
 export default function Register() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.title = "Đăng ký";
+  }, []);
+
   const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [msv, setMsv] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -13,7 +19,7 @@ export default function Register() {
   const navigate = useNavigate();
 
   const validateForm = () => {
-    if (!email || !password || !confirmPassword) {
+    if (!email || !fullName || !msv || !password || !confirmPassword) {
       setError("Vui lòng điền đầy đủ thông tin");
       return false;
     }
@@ -47,35 +53,26 @@ export default function Register() {
 
     const userData = {
       email,
+      full_name: fullName,
+      msv,
       password,
     };
 
     axios
       .post("http://localhost:8000/register", userData)
       .then((res) => {
-        Swal.fire({
-          icon: "success",
-          title: "Đăng ký thành công",
-          showConfirmButton: false,
-          timer: 1500,
-        });
+        alert("Đăng ký thành công");
         navigate("/login");
       })
       .catch((err) => {
-        console.error("Register error:", err);
-        if (err.response?.status === 409) {
-          setError("Email đã được sử dụng, vui lòng chọn email khác.");
-        } else {
-          setError(
-            err.response?.data?.detail || "Đăng ký thất bại, vui lòng thử lại."
-          );
-        }
+        alert(
+          err.response?.data?.detail || "Đăng ký thất bại, vui lòng thử lại."
+        );
       });
   };
 
   return (
     <div className="mt-5 d-flex justify-content-center align-items-center">
-      <title>Đăng ký</title>
       <div className="p-4" style={{ width: "450px" }}>
         <img
           src={logo}
@@ -95,6 +92,28 @@ export default function Register() {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
+            <label className="form-label">Họ và tên</label>
+            <input
+              type="text"
+              className="form-control"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Mã sinh viên</label>
+            <input
+              type="text"
+              className="form-control"
+              value={msv}
+              onChange={(e) => setMsv(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="mb-3">
             <label className="form-label">Email</label>
             <input
               type="email"
@@ -104,6 +123,7 @@ export default function Register() {
               required
             />
           </div>
+
           <div className="mb-3">
             <label className="form-label">Mật khẩu</label>
             <input
@@ -114,6 +134,7 @@ export default function Register() {
               required
             />
           </div>
+
           <div className="mb-3">
             <label className="form-label">Xác nhận mật khẩu</label>
             <input
