@@ -25,3 +25,7 @@ class User(Base):
     full_name = Column(String, nullable=False)
     is_admin = Column(Integer, nullable=False)
     msv = Column(String, nullable=False, unique=True, index=True)
+    faculty = Column(String, nullable=False)   # Khoa
+    major = Column(String, nullable=False)     # Ngành
+    birth_year = Column(Integer, nullable=False)
+    created_at = Column(String, nullable=False)

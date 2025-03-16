@@ -7,6 +7,10 @@ class UserCreate(BaseModel):
     full_name: str
     is_admin: int = 0
     msv: str
+    faculty: Optional[str] = None
+    major: Optional[str] = None
+    birth_year: Optional[int] = None
+    created_at: Optional[str] = None
 
 
 class UserOut(BaseModel):
@@ -29,7 +33,7 @@ class Token(BaseModel):
 
 
 class TokenData(BaseModel):
-    msv: Optional[str] = None
+    id: Optional[str] = None
 
 
 class BookCreate(BaseModel):

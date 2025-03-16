@@ -4,6 +4,7 @@ from .. import utils, database, models, oauth2, schemas
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import Response
 from sqlalchemy import func
+from datetime import datetime
 
 router = APIRouter()
 
@@ -45,8 +46,21 @@ def register(
             detail="MSV đã được sử dụng."
         )
 
+    year_code = int(user.msv[1:3])
+    major_code = user.msv[5:7]
+    major_map = {
+        "at": "An toàn thông tin",
+        "cn": "Công nghệ thông tin",
+        "kh": "Khoa học máy tính"
+    }
+
     user.msv = user.msv.lower()
     user.password = utils.hash_password(user.password)
+    user.major = major_map.get(major_code.lower(), "Ngành không xác định")
+    user.birth_year = 2000 + year_code - 18
+    user.created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    user.full_name = user.full_name.title()
+    user.faculty = "Công nghệ thông tin"
 
     new_user = models.User(**user.dict())
 

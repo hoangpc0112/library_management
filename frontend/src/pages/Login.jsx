@@ -87,7 +87,7 @@ export default function Login() {
               </label>
             </div>
             <a href="#" className="text-primary text-decoration-none">
-              Quên mật khẩu ?
+              Quên mật khẩu?
             </a>
           </div>
           <button type="submit" className="btn btn-primary w-100 mb-3">

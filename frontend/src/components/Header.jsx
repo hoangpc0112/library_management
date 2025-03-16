@@ -56,12 +56,12 @@ function Header() {
             <div className="dropdown text-end d-flex align-items-center justify-content-center">
               <a
                 href="#"
-                className="d-block link-body-emphasis text-decoration-none dropdown-toggle"
+                className="d-block link-body-emphasis text-decoration-none"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
                 <img
-                  src="https://cdn4.iconfinder.com/data/icons/instagram-ui-twotone/48/Paul-18-512.png"
+                  src="https://i.pinimg.com/736x/21/91/6e/21916e491ef0d796398f5724c313bbe7.jpg"
                   alt="avt"
                   width="32"
                   height="32"

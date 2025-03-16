@@ -17,7 +17,7 @@ const AboutUsPage = () => {
               <h2 className="mb-4 display-5 text-center">
                 Giới Thiệu Thư Viện PTIT
               </h2>
-              <p className="text-secondary mb-5 text-center lead fs-4">
+              <p className="mb-5 text-center lead fs-4">
                 Thư viện Học viện Công nghệ Bưu chính Viễn thông (PTIT) là trung
                 tâm tài nguyên học thuật, cung cấp hàng nghìn đầu sách và tài
                 liệu phục vụ sinh viên trong quá trình học tập và nghiên cứu.
