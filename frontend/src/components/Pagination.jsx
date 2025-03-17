@@ -1,6 +1,10 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 function Pagination({ currentPage, totalPages }) {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const searchQuery = queryParams.get("search") || "";
+
   const getPageNumbers = () => {
     const pageNumbers = [];
     const maxPagesToShow = 5;
@@ -37,13 +41,20 @@ function Pagination({ currentPage, totalPages }) {
     return pageNumbers;
   };
 
+  const generatePageLink = (page) => {
+    const params = new URLSearchParams();
+    params.set("page", page);
+    if (searchQuery) params.set("search", searchQuery);
+    return `?${params.toString()}`;
+  };
+
   return (
     <div className="d-flex justify-content-center mt-4">
       <nav aria-label="Điều hướng trang">
         <ul className="pagination shadow-sm">
           <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
             <Link
-              to="?page=1"
+              to={generatePageLink(1)}
               className="page-link rounded-start"
               aria-label="Trang đầu"
             >
@@ -53,7 +64,7 @@ function Pagination({ currentPage, totalPages }) {
 
           <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
             <Link
-              to={`?page=${currentPage - 1}`}
+              to={generatePageLink(currentPage - 1)}
               className="page-link"
               aria-label="Trang trước"
             >
@@ -78,7 +89,7 @@ function Pagination({ currentPage, totalPages }) {
                 {currentPage === page ? (
                   <span className="page-link">{page}</span>
                 ) : (
-                  <Link to={`?page=${page}`} className="page-link">
+                  <Link to={generatePageLink(page)} className="page-link">
                     {page}
                   </Link>
                 )}
@@ -92,7 +103,7 @@ function Pagination({ currentPage, totalPages }) {
             }`}
           >
             <Link
-              to={`?page=${currentPage + 1}`}
+              to={generatePageLink(currentPage + 1)}
               className="page-link"
               aria-label="Trang tiếp"
             >
@@ -106,7 +117,7 @@ function Pagination({ currentPage, totalPages }) {
             }`}
           >
             <Link
-              to={`?page=${totalPages}`}
+              to={generatePageLink(totalPages)}
               className="page-link rounded-end"
               aria-label="Trang cuối"
             >

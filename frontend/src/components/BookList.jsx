@@ -13,17 +13,16 @@ function BookList() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const currentPage = parseInt(queryParams.get("page")) || 1;
+  const search = queryParams.get("search") || "";
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [currentPage]);
 
-  useEffect(() => {
     const fetchBooks = async () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:8000/book/?page=${currentPage}`
+          `http://localhost:8000/book/?page=${currentPage}&search=${search}`
         );
         setBooks(response.data.books);
         setTotalPages(response.data.total_pages);
@@ -36,7 +35,7 @@ function BookList() {
     };
 
     fetchBooks();
-  }, [currentPage]);
+  }, [currentPage, search]);
 
   if (loading) {
     return (
@@ -68,7 +67,7 @@ function BookList() {
     <div className="container py-5">
       <div className="row g-4">
         {books.length === 0 ? (
-          <p className="text-center fs-5">Không có sách nào trong thư viện.</p>
+          <p className="text-center fs-5">Không có sách nào được tìm thấy.</p>
         ) : (
           books.map((book) => {
             return (
@@ -128,7 +127,9 @@ function BookList() {
           })
         )}
       </div>
-      <Pagination currentPage={currentPage} totalPages={totalPages} />
+      {totalPages ? (
+        <Pagination currentPage={currentPage} totalPages={totalPages} />
+      ) : null}
     </div>
   );
 }

@@ -1,12 +1,21 @@
-import BookList from "../components/BookList";
+import { useEffect, useState } from "react";
+import Carousel from "../components/Carousel";
 import "../css/HomePage.css";
-import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
+
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = "Trang chủ - Thư viện PTIT";
   }, []);
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+    navigate(`book/?search=${searchTerm}`);
+  };
 
   return (
     <div>
@@ -33,7 +42,26 @@ const HomePage = () => {
           </div>
         </div>
       </div>
-      <BookList />
+
+      <div className="d-flex justify-content-center mt-5 mb-5">
+        <form className="d-flex w-50" onSubmit={handleSearch}>
+          <input
+            type="text"
+            className="form-control me-2 shadow-sm border-2"
+            placeholder="Tìm kiếm sách..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button className="btn btn-primary" type="submit">
+            Tìm kiếm
+          </button>
+        </form>
+      </div>
+
+      <Carousel
+        title="Top 10 cuốn sách được yêu thích nhất"
+        endpoint={`http://localhost:8000/book/?page=1&size=10&sort=average_rating&order=desc`}
+      />
     </div>
   );
 };

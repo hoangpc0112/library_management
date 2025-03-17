@@ -16,7 +16,7 @@ const SingleBook = () => {
     const fetchBook = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://127.0.0.1:8000/book/${id}`);
+        const response = await axios.get(`http://localhost:8000/book/${id}`);
         setBook(response.data);
         setError(false);
       } catch (err) {
@@ -75,7 +75,7 @@ const SingleBook = () => {
                   alt={book.title}
                   className="img-fluid rounded shadow"
                   style={{
-                    maxHeight: "500px",
+                    maxHeight: "600px",
                     width: "100%",
                     objectFit: "cover",
                   }}
@@ -119,7 +119,7 @@ const SingleBook = () => {
                 của {book.author} và đang tìm kiếm một cuốn sách chất lượng được
                 đánh giá cao bởi độc giả.
               </p>
-              <button className="btn btn-primary">Mượn sách</button>
+              <button className="btn btn-primary">Mượn sách này</button>
             </div>
           </div>
         </div>

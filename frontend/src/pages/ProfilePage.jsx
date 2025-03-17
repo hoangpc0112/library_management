@@ -9,6 +9,7 @@ import {
   FaGraduationCap,
   FaBirthdayCake,
 } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState(null);
@@ -38,7 +39,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = "Hồ Sơ Người Dùng";
+    document.title = "Hồ sơ sinh viên";
 
     const fetchUserData = async () => {
       try {
@@ -55,11 +56,9 @@ const ProfilePage = () => {
           ...response.data,
           avatar:
             "https://i.pinimg.com/736x/21/91/6e/21916e491ef0d796398f5724c313bbe7.jpg",
-          department: response.data.faculty,
           borrowedBooks: 3,
           returnedBooks: 8,
           createdAt: formatCreatedAt(response.data.created_at),
-          msv: response.data.msv.toUpperCase(),
         });
         setLoading(false);
       } catch (err) {
@@ -114,7 +113,7 @@ const ProfilePage = () => {
             <div className="bg-primary text-white rounded-3 p-4 shadow">
               <div className="row align-items-center">
                 <div className="col-md-8">
-                  <h1 className="display-5 fw-bold">Hồ Sơ Sinh Viên</h1>
+                  <h1 className="display-5 fw-bold">Hồ sơ sinh viên</h1>
                   <p className="lead mb-0">
                     Quản lý thông tin cá nhân và theo dõi hoạt động mượn trả
                     sách tại thư viện PTIT
@@ -125,6 +124,11 @@ const ProfilePage = () => {
                     <i className="bi bi-pencil-square me-1"></i> Cập nhật thông
                     tin
                   </button>
+                  {userData.is_admin ? (
+                    <Link to="/admin" className="btn btn-outline-light me-2">
+                      <i className="bi bi-pencil-square me-1"></i> Quản lý
+                    </Link>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -258,7 +262,7 @@ const ProfilePage = () => {
 
             <div className="card border-0 shadow-sm rounded-3 mb-4">
               <div className="card-header border-0 pt-4 pb-3">
-                <h4 className="mb-0 fw-bold">Sách Đang Mượn</h4>
+                <h4 className="mb-0 fw-bold">Sách đang mượn</h4>
               </div>
               <div className="card-body p-0">
                 <div className="table-responsive">
@@ -266,10 +270,10 @@ const ProfilePage = () => {
                     <thead className="table">
                       <tr>
                         <th scope="col">#</th>
-                        <th scope="col">Tên Sách</th>
-                        <th scope="col">Ngày Mượn</th>
-                        <th scope="col">Hạn Trả</th>
-                        <th scope="col">Trạng Thái</th>
+                        <th scope="col">Tên sách</th>
+                        <th scope="col">Ngày mượn</th>
+                        <th scope="col">Hạn trả</th>
+                        <th scope="col">Trạng thái</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -322,7 +326,7 @@ const ProfilePage = () => {
 
             <div className="card border-0 shadow-sm rounded-3">
               <div className="card-header border-0 pt-4 pb-3">
-                <h4 className="mb-0 fw-bold">Cài Đặt Tài Khoản</h4>
+                <h4 className="mb-0 fw-bold">Cài đặt tài khoản</h4>
               </div>
               <div className="card-body">
                 <div className="row g-4">

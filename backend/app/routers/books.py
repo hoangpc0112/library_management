@@ -2,18 +2,29 @@ from .. import schemas, models, oauth2
 from fastapi import Depends, HTTPException, status, APIRouter
 from sqlalchemy.orm import Session
 from ..database import get_db
+from sqlalchemy import desc, func
 
 router = APIRouter(prefix="/book")
 
 
 @router.get("/")
-def get_all(db: Session = Depends(get_db), page: int = 1):
-    total_books = db.query(models.Book).count()
-    total_pages = (total_books + 24 - 1) // 24
-    books = db.query(models.Book).offset((page - 1) * 24).limit(24).all()
+def get_all(db: Session = Depends(get_db), page: int = 1, size: int = 24, search: str = "", sort: str = "id", order: str = "asc"):
+    query = db.query(models.Book)
+
+    if search:
+        query = query.filter(func.lower(models.Book.title).like(f"%{search.lower()}%"))
+
+    if order.lower() == "desc":
+        query = query.order_by(desc(getattr(models.Book, sort)))
+    else:
+        query = query.order_by(getattr(models.Book, sort))
+
+    total_books = query.count()
+    total_pages = (total_books + size - 1) // size
+
+    books = query.offset((page - 1) * size).limit(size).all()
 
     return {
-        "total_books": total_books,
         "total_pages": total_pages,
         "current_page": page,
         "books": books

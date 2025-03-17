@@ -1,0 +1,11 @@
+html {
+  overflow-y: scroll;
+}
+
+* {
+  scrollbar-width: thin;
+}
+
+:root {
+  scrollbar-color: rgba(127, 127, 127) rgba(0, 0, 0, 0.03);
+}
