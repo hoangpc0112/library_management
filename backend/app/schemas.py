@@ -1,5 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr
+from datetime import datetime
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -46,8 +47,20 @@ class BookCreate(BaseModel):
     ratings_count: int
     num_pages: int
 
+class BookUpdate(BaseModel):
+    title: Optional[str] = None
+    author: Optional[str] = None
+    image_url: Optional[str] = None
+    publisher: Optional[str] = None
+    published_year: Optional[int] = None
+    num_pages: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
 
 class BookOut(BaseModel):
+    id: int
     title: str
     author: str
     publisher: str
@@ -59,3 +72,7 @@ class BookOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class BorrowRequestCreate(BaseModel):
+    borrow_date: Optional[datetime] = None
+    return_date: Optional[datetime] = None

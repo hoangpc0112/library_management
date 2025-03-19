@@ -15,7 +15,8 @@ def login(
     db: Session = Depends(database.get_db),
 ):
     user = (
-        db.query(models.User)
+        db
+        .query(models.User)
         .filter(func.lower(models.User.msv) == func.lower(user_credentials.username))
         .first()
     )
@@ -34,13 +35,23 @@ def register(
     user: schemas.UserCreate,
     db: Session = Depends(database.get_db)
 ):
-    if db.query(models.User).filter(models.User.email == user.email).first():
+    if (
+        db
+        .query(models.User)
+        .filter(models.User.email == user.email)
+        .first()
+    ):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Email đã được sử dụng."
         )
 
-    if db.query(models.User).filter(models.User.email == user.email).first():
+    if (
+        db
+        .query(models.User)
+        .filter(models.User.msv == user.msv)
+        .first()
+    ):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="MSV đã được sử dụng."

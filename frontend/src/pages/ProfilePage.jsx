@@ -9,7 +9,6 @@ import {
   FaGraduationCap,
   FaBirthdayCake,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState(null);
@@ -124,11 +123,6 @@ const ProfilePage = () => {
                     <i className="bi bi-pencil-square me-1"></i> Cập nhật thông
                     tin
                   </button>
-                  {userData.is_admin ? (
-                    <Link to="/admin" className="btn btn-outline-light me-2">
-                      <i className="bi bi-pencil-square me-1"></i> Quản lý
-                    </Link>
-                  ) : null}
                 </div>
               </div>
             </div>

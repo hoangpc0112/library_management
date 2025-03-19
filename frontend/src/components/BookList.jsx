@@ -71,10 +71,7 @@ function BookList() {
         ) : (
           books.map((book) => {
             return (
-              <div
-                key={book.id}
-                className="book-card col-6 col-md-4 col-xl-3 col-xxl-2"
-              >
+              <div className="book-card col-6 col-md-4 col-xl-3 col-xxl-2">
                 <Link to={`/book/${book.id}`} className="text-decoration-none">
                   <div className="book-cover-container">
                     <div className="book-cover">
@@ -85,41 +82,22 @@ function BookList() {
                         className="book-image"
                       />
                     </div>
+                  </div>
 
-                    <div className="book-overlay">
-                      <div className="book-info">
-                        <h3 className="book-title">{book.title}</h3>
-                        <div className="book-author">{book.author}</div>
-
-                        <div className="book-details">
-                          <div className="book-year">
-                            <span className="detail-label">Năm xuất bản:</span>{" "}
-                            {book.published_year}
-                          </div>
-
-                          <div className="book-rating">
-                            <span className="detail-label">Đánh giá:</span>
-                            <div className="stars-container">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <span
-                                  key={star}
-                                  className={`star ${
-                                    star <= book.average_rating ? "filled" : ""
-                                  }`}
-                                >
-                                  ★
-                                </span>
-                              ))}
-                              <span className="rating-number">
-                                ({book.average_rating})
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="view-details">Xem chi tiết</div>
-                      </div>
-                    </div>
+                  <div className="book-info text-center mt-2">
+                    <h6 className="book-title m-0" title={book.title}>
+                      {book.title.length > 20
+                        ? book.title.slice(0, 20) + "..."
+                        : book.title}
+                    </h6>
+                    <p
+                      className="book-author text-muted small m-0"
+                      title={book.author}
+                    >
+                      {book.author.length > 30
+                        ? book.author.slice(0, 30) + "..."
+                        : book.author}
+                    </p>
                   </div>
                 </Link>
               </div>

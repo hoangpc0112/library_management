@@ -16,6 +16,8 @@ import Register from "./pages/Register";
 import "./css/App.css";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./pages/AdminDashboard";
+import { AuthProvider } from "./contexts/AuthContext";
+import AdminRoute from "./components/AdminRoute";
 
 function App() {
   const router = createBrowserRouter(
@@ -30,12 +32,19 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="profile" element={<ProfilePage />} />
           <Route path="borrowed" element={<BorrowedPage />} />
+        </Route>
+        <Route element={<AdminRoute />}>
           <Route path="admin" element={<AdminDashboard />} />
         </Route>
       </Route>
     )
   );
-  return <RouterProvider router={router} />;
+
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  );
 }
 
 export default App;

@@ -1,34 +1,74 @@
-import React, { useState, useEffect, use } from "react";
-import { useParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../contexts/AuthContext";
+import EditBook from "../components/EditBook";
+import BorrowRequest from "../components/BorrowRequest";
 
 const SingleBook = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isBorrowing, setIsBorrowing] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const { isAdmin, currentUser } = useAuth();
+  const [hasPendingRequest, setHasPendingRequest] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  useEffect(() => {
-    const fetchBook = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(`http://localhost:8000/book/${id}`);
-        setBook(response.data);
-        setError(false);
-      } catch (err) {
-        setError(true);
-        console.error("Lỗi khi lấy thông tin sách:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchBook = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`http://localhost:8000/book/${id}`);
+      setBook(response.data);
+      setError(false);
+    } catch (err) {
+      setError(true);
+      console.error("Lỗi khi lấy thông tin sách:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const checkPendingRequests = async () => {
+    if (!currentUser) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const axiosInstance = axios.create({
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const response = await axiosInstance.get(`http://localhost:8000/borrow/`);
+      const pendingRequest = response.data.find(
+        (request) =>
+          request.book_id === parseInt(id) && request.status === "pending"
+      );
+
+      setHasPendingRequest(!!pendingRequest);
+    } catch (err) {
+      console.error("Lỗi khi kiểm tra yêu cầu mượn sách:", err);
+    }
+  };
+
+  useEffect(() => {
     fetchBook();
   }, [id]);
+
+  useEffect(() => {
+    if (currentUser) {
+      checkPendingRequests();
+    }
+  }, [currentUser, id]);
 
   useEffect(() => {
     if (book?.title) {
@@ -37,6 +77,53 @@ const SingleBook = () => {
       document.title = "Loading...";
     }
   }, [book?.title]);
+
+  const handleDelete = async () => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa sách này không?")) {
+      try {
+        setDeleteLoading(true);
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("Không tìm thấy token xác thực");
+        }
+
+        const axiosInstance = axios.create({
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        await axiosInstance.delete(`http://localhost:8000/book/${id}`);
+        navigate(-1);
+      } catch (err) {
+        console.error("Lỗi khi xóa sách:", err);
+        alert(
+          err.response?.data?.detail ||
+            "Có lỗi xảy ra khi xóa sách. Vui lòng thử lại sau."
+        );
+        setDeleteLoading(false);
+      }
+    }
+  };
+
+  const handleEditSuccess = () => {
+    setIsEditing(false);
+    fetchBook();
+  };
+
+  const handleBorrow = () => {
+    if (!currentUser) {
+      navigate("/login", { state: { from: `/book/${id}` } });
+      return;
+    }
+    setIsBorrowing(true);
+  };
+
+  const handleBorrowSuccess = () => {
+    setIsBorrowing(false);
+    setHasPendingRequest(true);
+    alert("Yêu cầu mượn sách đã được gửi thành công! Chờ quản lý phê duyệt.");
+  };
 
   if (loading)
     return (
@@ -62,6 +149,30 @@ const SingleBook = () => {
         </div>
       </div>
     );
+
+  if (isEditing) {
+    return (
+      <div className="container my-4">
+        <EditBook
+          book={book}
+          onCancel={() => setIsEditing(false)}
+          onSuccess={handleEditSuccess}
+        />
+      </div>
+    );
+  }
+
+  if (isBorrowing) {
+    return (
+      <div className="container my-4">
+        <BorrowRequest
+          bookId={id}
+          onCancel={() => setIsBorrowing(false)}
+          onSuccess={handleBorrowSuccess}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="container my-4">
@@ -119,7 +230,37 @@ const SingleBook = () => {
                 của {book.author} và đang tìm kiếm một cuốn sách chất lượng được
                 đánh giá cao bởi độc giả.
               </p>
-              <button className="btn btn-primary">Mượn sách này</button>
+              <div className="d-flex justify-content-between gap-3">
+                {hasPendingRequest ? (
+                  <button className="btn btn-secondary flex-grow-1" disabled>
+                    Yêu cầu mượn đang chờ phê duyệt
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleBorrow}
+                    className="btn btn-primary flex-grow-1"
+                  >
+                    Mượn sách này
+                  </button>
+                )}
+                {isAdmin() ? (
+                  <>
+                    <button
+                      className="btn btn-warning flex-grow-1"
+                      onClick={() => setIsEditing(true)}
+                    >
+                      Sửa thông tin
+                    </button>
+                    <button
+                      className="btn btn-danger flex-grow-1"
+                      onClick={handleDelete}
+                      disabled={deleteLoading}
+                    >
+                      {deleteLoading ? "Đang xóa..." : "Xóa sách"}
+                    </button>
+                  </>
+                ) : null}
+              </div>
             </div>
           </div>
         </div>

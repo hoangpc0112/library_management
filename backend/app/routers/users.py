@@ -7,5 +7,8 @@ router = APIRouter(prefix="/profile")
 
 
 @router.get("/")
-def profile(db: Session = Depends(get_db), current_user=Depends(oauth2.get_current_user)):
+def profile(
+    db: Session = Depends(get_db),
+    current_user=Depends(oauth2.get_current_user)
+):
     return current_user

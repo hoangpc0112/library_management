@@ -1,17 +1,16 @@
 import { Link, useNavigate } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 import logo from "../assets/images/logo.png";
+import { useAuth } from "../contexts/AuthContext";
 
 function Header() {
-  const token = localStorage.getItem("token");
-
+  const { currentUser, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     const confirmLogout = window.confirm("Đăng xuất khỏi tài khoản hiện tại ?");
-
     if (confirmLogout) {
-      localStorage.removeItem("token");
+      logout();
       navigate("/login");
     }
   };
@@ -52,7 +51,8 @@ function Header() {
           <li className="nav-item">
             <ThemeToggle />
           </li>
-          {token ? (
+
+          {isAuthenticated ? (
             <div className="dropdown text-end d-flex align-items-center justify-content-center">
               <a
                 href="#"
@@ -61,7 +61,10 @@ function Header() {
                 aria-expanded="false"
               >
                 <img
-                  src="https://i.pinimg.com/736x/21/91/6e/21916e491ef0d796398f5724c313bbe7.jpg"
+                  src={
+                    currentUser?.avatar ||
+                    "https://i.pinimg.com/736x/21/91/6e/21916e491ef0d796398f5724c313bbe7.jpg"
+                  }
                   alt="avt"
                   width="32"
                   height="32"
@@ -74,6 +77,13 @@ function Header() {
                     Hồ sơ
                   </Link>
                 </li>
+                {currentUser?.is_admin ? (
+                  <li>
+                    <Link className="dropdown-item" to="/admin">
+                      Quản trị
+                    </Link>
+                  </li>
+                ) : null}
                 <li>
                   <button onClick={handleLogout} className="dropdown-item">
                     Đăng xuất
@@ -82,9 +92,11 @@ function Header() {
               </ul>
             </div>
           ) : (
-            <Link className="nav-link" to="/login">
-              <i className="fas fa-sign-in-alt"></i> Đăng nhập
-            </Link>
+            <div className="d-flex gap-2">
+              <Link className="nav-link" to="/login">
+                <i className="fas fa-sign-in-alt"></i> Đăng nhập
+              </Link>
+            </div>
           )}
         </ul>
       </div>

@@ -28,7 +28,7 @@
 }
 
 .book-cover-container:hover .book-image {
-  transform: scale(1.05);
+  transform: scale(1.025);
 }
 
 .book-overlay {
@@ -148,4 +148,24 @@
     font-size: 0.75rem;
     margin-bottom: 10px;
   }
+}
+
+.book-info {
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.book-title {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.book-author {
+  font-size: 12px;
+  color: #6c757d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

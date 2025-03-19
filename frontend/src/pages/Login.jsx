@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import logo from "../assets/images/logo.png";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function Login() {
   useEffect(() => {
@@ -12,8 +12,6 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-
-  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -31,7 +29,7 @@ export default function Login() {
       .then((res) => {
         alert("Đăng nhập thành công");
         localStorage.setItem("token", res.data.access_token);
-        navigate("/");
+        window.location.href = "/";
       })
       .catch((err) => {
         alert(
