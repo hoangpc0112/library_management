@@ -71,7 +71,10 @@ function BookList() {
         ) : (
           books.map((book) => {
             return (
-              <div className="book-card col-6 col-md-4 col-xl-3 col-xxl-2">
+              <div
+                className="book-card col-6 col-md-4 col-xl-3 col-xxl-2"
+                key={book.id}
+              >
                 <Link to={`/book/${book.id}`} className="text-decoration-none">
                   <div className="book-cover-container">
                     <div className="book-cover">

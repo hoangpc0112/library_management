@@ -18,6 +18,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./pages/AdminDashboard";
 import { AuthProvider } from "./contexts/AuthContext";
 import AdminRoute from "./components/AdminRoute";
+import AdminBorrowRequest from "./pages/AdminBorrowRequest";
 
 function App() {
   const router = createBrowserRouter(
@@ -33,8 +34,9 @@ function App() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="borrowed" element={<BorrowedPage />} />
         </Route>
-        <Route element={<AdminRoute />}>
-          <Route path="admin" element={<AdminDashboard />} />
+        <Route path="admin/" element={<AdminRoute />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="borrow-requests" element={<AdminBorrowRequest />} />
         </Route>
       </Route>
     )
