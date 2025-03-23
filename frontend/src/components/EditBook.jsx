@@ -9,7 +9,7 @@ const EditBookForm = ({ book, onCancel, onSuccess }) => {
     publisher: "",
     published_year: "",
     num_pages: "",
-    gg_drive_link: "", // Thêm trường gg_drive_link
+    gg_drive_link: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -23,7 +23,7 @@ const EditBookForm = ({ book, onCancel, onSuccess }) => {
         publisher: book.publisher || "",
         published_year: book.published_year || "",
         num_pages: book.num_pages || "",
-        gg_drive_link: book.gg_drive_link || "", // Khởi tạo giá trị từ book
+        gg_drive_link: book.gg_drive_link || "",
       });
     }
   }, [book]);
