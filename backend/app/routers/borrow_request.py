@@ -123,6 +123,24 @@ def approve_borrow_request(
             detail="Không tìm thấy yêu cầu mượn sách."
         )
 
+    # Từ chối tất cả các yêu cầu mượn sách khác của cuốn sách này trong khoảng thời gian mượn sách
+    borrow_request_list = (
+        db
+        .query(models.BorrowRequest)
+        .filter(
+            models.BorrowRequest.book_id == borrow_request.book_id,
+            models.BorrowRequest.status == "pending",
+            models.BorrowRequest.id != id,
+            func.DATE(models.BorrowRequest.borrow_date) <= func.DATE(borrow_request.return_date)
+        )
+        .all()
+    )
+
+    for borrow in borrow_request_list:
+        borrow.status = "rejected"
+        db.commit()
+        db.refresh(borrow)
+
     borrow_request.status = "approved"
     borrow_request.borrow_date = datetime.now()
     db.commit()

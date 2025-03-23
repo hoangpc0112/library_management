@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css";
 import { FaBook, FaUsers, FaExclamationTriangle } from "react-icons/fa";
 
 const Statistics = () => {
@@ -24,7 +23,6 @@ const Statistics = () => {
     try {
       const token = localStorage.getItem("token");
 
-      // Fetch all required data concurrently
       const [booksResponse, usersResponse, borrowResponse] = await Promise.all([
         axios.get("http://localhost:8000/book/", {
           headers: { Authorization: `Bearer ${token}` },
@@ -37,7 +35,6 @@ const Statistics = () => {
         }),
       ]);
 
-      // Create maps for quick lookup
       const bookMap = new Map(
         booksResponse.data.books.map((book) => [book.id, book.title])
       );
@@ -55,7 +52,6 @@ const Statistics = () => {
         (loan) => new Date(loan.return_date) < new Date()
       ).length;
 
-      // Calculate most borrowed books
       const bookBorrowCount = {};
       borrowResponse.data.forEach((loan) => {
         const bookTitle = bookMap.get(loan.book_id) || "Sách không xác định";
@@ -66,7 +62,6 @@ const Statistics = () => {
         .slice(0, 5)
         .map(([title, count]) => ({ title, count }));
 
-      // Calculate top borrowers
       const userBorrowCount = {};
       borrowResponse.data.forEach((loan) => {
         const userName =
@@ -105,7 +100,6 @@ const Statistics = () => {
         <div className="text-center">Đang tải dữ liệu...</div>
       ) : (
         <div className="row g-4">
-          {/* Summary Cards */}
           <div className="col-md-6 col-lg-4">
             <div className="card bg-primary text-white shadow">
               <div className="card-body d-flex align-items-center">
@@ -142,7 +136,6 @@ const Statistics = () => {
             </div>
           </div>
 
-          {/* Detailed Statistics */}
           <div className="col-md-6">
             <div className="card shadow">
               <div className="card-header">

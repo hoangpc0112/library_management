@@ -19,20 +19,17 @@ const Carousel = ({ title, endpoint }) => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(endpoint, {
-          headers: { Authorization: `Bearer ${token}` }, // Include token for protected endpoints
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Handle different response structures
         let fetchedBooks = [];
         if (Array.isArray(response.data)) {
-          // For /recommendation endpoints (flat list)
           fetchedBooks = response.data;
         } else if (response.data.books && Array.isArray(response.data.books)) {
-          // For /book endpoint (paginated response)
           fetchedBooks = response.data.books;
         }
 
-        setBooks(fetchedBooks || []); // Default to empty array if no valid data
+        setBooks(fetchedBooks || []);
         setLoading(false);
       } catch (error) {
         console.error(`Error fetching books from ${endpoint}:`, error);

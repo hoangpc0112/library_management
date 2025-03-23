@@ -15,6 +15,7 @@ class Book(Base):
     average_rating = Column(DOUBLE_PRECISION, nullable=False)
     ratings_count = Column(Integer, nullable=False)
     num_pages = Column(Integer, nullable=False)
+    gg_drive_link = Column(String, nullable=True)
 
     borrow_requests = relationship("BorrowRequest", back_populates="book")
 
@@ -28,8 +29,8 @@ class User(Base):
     full_name = Column(String, nullable=False)
     is_admin = Column(Integer, nullable=False)
     msv = Column(String, nullable=False, unique=True, index=True)
-    faculty = Column(String, nullable=False)   # Khoa
-    major = Column(String, nullable=False)     # Ngành
+    faculty = Column(String, nullable=False)
+    major = Column(String, nullable=False)
     birth_year = Column(Integer, nullable=False)
     created_at = Column(String, nullable=False)
 
@@ -43,9 +44,9 @@ class BorrowRequest(Base):
     book_id = Column(Integer, ForeignKey("books.id", ondelete="CASCADE"), nullable=False)
     status = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
-    borrow_date = Column(TIMESTAMP(timezone=True), nullable=True)  # Date when book was actually borrowed
-    return_date = Column(TIMESTAMP(timezone=True), nullable=True)   # Expected return date
-    actual_return_date = Column(TIMESTAMP(timezone=True), nullable=True)  # Date when book was actually returned
+    borrow_date = Column(TIMESTAMP(timezone=True), nullable=True)
+    return_date = Column(TIMESTAMP(timezone=True), nullable=True)
+    actual_return_date = Column(TIMESTAMP(timezone=True), nullable=True)
 
     user = relationship("User")
     book = relationship("Book")

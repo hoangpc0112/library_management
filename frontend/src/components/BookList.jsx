@@ -23,7 +23,6 @@ function BookList({ apiEndpoint = "book" }) {
       try {
         setLoading(true);
 
-        // Cấu hình header nếu endpoint là recommendation/user
         let config = {};
         if (apiEndpoint.includes("recommendation/user")) {
           const token = localStorage.getItem("token");
@@ -39,10 +38,8 @@ function BookList({ apiEndpoint = "book" }) {
           };
         }
 
-        // Xây dựng URL với tham số phù hợp
         let url = `http://localhost:8000/${apiEndpoint}/`;
 
-        // Thêm query params cho pagination và search nếu đây là endpoint "book"
         if (apiEndpoint === "book") {
           url += `?page=${currentPage}&search=${search}`;
         }
@@ -50,16 +47,13 @@ function BookList({ apiEndpoint = "book" }) {
         const response = await axios.get(url, config);
         console.log("API Response:", response.data);
 
-        // Xử lý cả hai loại response
         if (apiEndpoint === "book") {
-          // Response format từ /book/ là một object với thuộc tính "books"
           setBooks(response.data.books || []);
           setTotalPages(response.data.total_pages || 1);
           setCurrentPageState(response.data.current_page || 1);
         } else {
-          // Response format từ /recommendation/user là mảng sách trực tiếp
           setBooks(Array.isArray(response.data) ? response.data : []);
-          setTotalPages(1); // Không có pagination cho recommendation
+          setTotalPages(1);
           setCurrentPageState(1);
         }
 
@@ -106,7 +100,6 @@ function BookList({ apiEndpoint = "book" }) {
     );
   }
 
-  // Đảm bảo books là một array hợp lệ
   const booksToRender = Array.isArray(books) ? books : [];
 
   return (
@@ -116,7 +109,7 @@ function BookList({ apiEndpoint = "book" }) {
           <p className="text-center fs-5">Không có sách nào được tìm thấy.</p>
         ) : (
           booksToRender.map((book) => {
-            if (!book) return null; // Skip if book is null
+            if (!book) return null;
 
             return (
               <div

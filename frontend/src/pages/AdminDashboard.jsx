@@ -25,6 +25,7 @@ const AdminDashboard = () => {
     image_url: "",
     published_year: "",
     num_pages: "",
+    gg_drive_link: "",
   });
   const [error, setError] = useState("");
 
@@ -87,10 +88,13 @@ const AdminDashboard = () => {
       const token = localStorage.getItem("token");
       const dataToSubmit = {
         ...formData,
-        published_year: parseInt(formData.published_year),
-        num_pages: parseInt(formData.num_pages),
+        published_year: formData.published_year
+          ? parseInt(formData.published_year)
+          : null,
+        num_pages: formData.num_pages ? parseInt(formData.num_pages) : null,
         average_rating: 0,
         ratings_count: 0,
+        gg_drive_link: formData.gg_drive_link || null,
       };
 
       await axios.post("http://localhost:8000/book/", dataToSubmit, {
@@ -105,6 +109,7 @@ const AdminDashboard = () => {
         image_url: "",
         published_year: "",
         num_pages: "",
+        gg_drive_link: "",
       });
       fetchStats();
     } catch (err) {
@@ -123,7 +128,7 @@ const AdminDashboard = () => {
             <div className="alert alert-info d-flex justify-content-between align-items-center">
               <span>
                 <strong>Xin chào, Admin!</strong> Có {stats.pendingRequests} yêu
-                cầu mượn sách cần xử lý.
+                cầu mượn sách đang cần xử lý.
               </span>
               <button
                 className="btn btn-success"
@@ -286,6 +291,7 @@ const AdminDashboard = () => {
                     value={formData.title}
                     onChange={handleInputChange}
                     required
+                    placeholder="Nhập tiêu đề sách"
                   />
                 </div>
                 <div className="mb-3">
@@ -297,6 +303,7 @@ const AdminDashboard = () => {
                     value={formData.author}
                     onChange={handleInputChange}
                     required
+                    placeholder="Nhập tên tác giả"
                   />
                 </div>
                 <div className="mb-3">
@@ -307,6 +314,7 @@ const AdminDashboard = () => {
                     name="publisher"
                     value={formData.publisher}
                     onChange={handleInputChange}
+                    placeholder="Nhập tên nhà xuất bản"
                     required
                   />
                 </div>
@@ -318,6 +326,7 @@ const AdminDashboard = () => {
                     name="image_url"
                     value={formData.image_url}
                     onChange={handleInputChange}
+                    placeholder="Nhập URL ảnh bìa sách"
                   />
                 </div>
                 <div className="mb-3">
@@ -328,7 +337,7 @@ const AdminDashboard = () => {
                     name="published_year"
                     value={formData.published_year}
                     onChange={handleInputChange}
-                    required
+                    placeholder="Nhập năm xuất bản"
                   />
                 </div>
                 <div className="mb-3">
@@ -339,7 +348,18 @@ const AdminDashboard = () => {
                     name="num_pages"
                     value={formData.num_pages}
                     onChange={handleInputChange}
-                    required
+                    placeholder="Nhập số trang"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Google Drive Link</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="gg_drive_link"
+                    value={formData.gg_drive_link}
+                    onChange={handleInputChange}
+                    placeholder="Nhập link Google Drive"
                   />
                 </div>
               </form>

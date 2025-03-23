@@ -32,7 +32,7 @@ class UserUpdate(BaseModel):
     is_admin: bool | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserLogin(BaseModel):
@@ -58,6 +58,7 @@ class BookCreate(BaseModel):
     average_rating: float
     ratings_count: int
     num_pages: int
+    gg_drive_link: Optional[str] = None
 
 class BookUpdate(BaseModel):
     title: Optional[str] = None
@@ -66,6 +67,7 @@ class BookUpdate(BaseModel):
     publisher: Optional[str] = None
     published_year: Optional[int] = None
     num_pages: Optional[int] = None
+    gg_drive_link: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -81,6 +83,7 @@ class BookOut(BaseModel):
     average_rating: float
     ratings_count: int
     num_pages: int
+    gg_drive_link: Optional[str] = None
 
     class Config:
         from_attributes = True

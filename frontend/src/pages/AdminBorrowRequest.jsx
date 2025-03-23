@@ -74,6 +74,15 @@ const AdminBorrowRequest = () => {
     return date.toLocaleDateString("vi-VN");
   };
 
+  const formatDateTime = (dateTimeString) => {
+    const dateTime = new Date(dateTimeString);
+    return (
+      dateTime.toLocaleDateString("vi-VN") +
+      " " +
+      dateTime.toLocaleTimeString("vi-VN")
+    );
+  };
+
   return (
     <div className="container mt-4">
       <h1 className="mb-4 text-center">Quản lý yêu cầu mượn sách</h1>
@@ -121,6 +130,7 @@ const AdminBorrowRequest = () => {
               <th className="text-truncate" style={{ maxWidth: "200px" }}>
                 Tên sách
               </th>
+              <th>Ngày tạo</th>
               <th>Ngày mượn</th>
               <th>Ngày trả</th>
               <th>Thao tác</th>
@@ -138,6 +148,7 @@ const AdminBorrowRequest = () => {
                 >
                   {request.book.title || "N/A"}
                 </td>
+                <td>{formatDateTime(request.created_at)}</td>
                 <td>{formatDate(request.borrow_date)}</td>
                 <td>{formatDate(request.return_date)}</td>
                 <td>

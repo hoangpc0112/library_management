@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
 const EditBookForm = ({ book, onCancel, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -10,10 +9,10 @@ const EditBookForm = ({ book, onCancel, onSuccess }) => {
     publisher: "",
     published_year: "",
     num_pages: "",
+    gg_drive_link: "", // Thêm trường gg_drive_link
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (book) {
@@ -24,6 +23,7 @@ const EditBookForm = ({ book, onCancel, onSuccess }) => {
         publisher: book.publisher || "",
         published_year: book.published_year || "",
         num_pages: book.num_pages || "",
+        gg_drive_link: book.gg_drive_link || "", // Khởi tạo giá trị từ book
       });
     }
   }, [book]);
@@ -53,11 +53,12 @@ const EditBookForm = ({ book, onCancel, onSuccess }) => {
         },
       });
 
-      // Convert number fields
       const dataToSubmit = {
         ...formData,
-        published_year: parseInt(formData.published_year, 10),
-        num_pages: parseInt(formData.num_pages, 10),
+        published_year: formData.published_year
+          ? parseInt(formData.published_year, 10)
+          : null, // Cho phép null
+        num_pages: formData.num_pages ? parseInt(formData.num_pages, 10) : null, // Cho phép null
       };
 
       await axiosInstance.put(
@@ -174,6 +175,21 @@ const EditBookForm = ({ book, onCancel, onSuccess }) => {
                 onChange={handleChange}
               />
             </div>
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="gg_drive_link" className="form-label">
+              Google Drive Link
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="gg_drive_link"
+              name="gg_drive_link"
+              value={formData.gg_drive_link}
+              onChange={handleChange}
+              placeholder="Nhập link Google Drive"
+            />
           </div>
 
           <div className="d-flex gap-2 mt-4">

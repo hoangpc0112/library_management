@@ -59,6 +59,25 @@ def get_one(
 
     return book
 
+@router.post("/", response_model=schemas.BookOut)
+def create(
+    book: schemas.BookCreate,
+    db: Session = Depends(get_db),
+    current_user = Depends(oauth2.get_current_user)
+):
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bạn không có quyền thêm sách."
+        )
+
+    new_book = models.Book(**book.dict())
+    db.add(new_book)
+    db.commit()
+    db.refresh(new_book)
+
+    return new_book
+
 
 @router.put("/{id}")
 def update(

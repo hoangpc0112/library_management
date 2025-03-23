@@ -53,7 +53,6 @@ const EditUserForm = ({ user, onCancel, onSuccess }) => {
         },
       });
 
-      // Convert number fields
       const dataToSubmit = {
         ...formData,
         birth_year: parseInt(formData.birth_year, 10),

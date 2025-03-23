@@ -22,9 +22,8 @@ const BorrowRequest = ({ bookId, onSuccess, onCancel }) => {
 
     const borrowDateObj = new Date(borrowDate);
     const returnDateObj = new Date(returnDate);
-    const maxBorrowTime = 30 * 24 * 60 * 60 * 1000; // 30 ngày
+    const maxBorrowTime = 30 * 24 * 60 * 60 * 1000;
 
-    // Kiểm tra nếu thời gian mượn vượt quá 30 ngày
     if (returnDateObj - borrowDateObj > maxBorrowTime) {
       setLoading(false);
       setError(
@@ -69,7 +68,6 @@ const BorrowRequest = ({ bookId, onSuccess, onCancel }) => {
     }
   };
 
-  // Kiểm tra nếu currentUser chưa đăng nhập
   useEffect(() => {
     if (!currentUser) {
       setError("Bạn cần đăng nhập để mượn sách");
@@ -132,7 +130,7 @@ const BorrowRequest = ({ bookId, onSuccess, onCancel }) => {
           <div className="d-flex gap-2">
             <button
               type="submit"
-              className="btn btn-primary flex-grow-1"
+              className="btn btn-primary"
               disabled={loading || !currentUser}
             >
               {loading ? (
@@ -150,7 +148,7 @@ const BorrowRequest = ({ bookId, onSuccess, onCancel }) => {
             </button>
             <button
               type="button"
-              className="btn btn-outline-secondary"
+              className="btn btn-secondary"
               onClick={onCancel}
             >
               Hủy

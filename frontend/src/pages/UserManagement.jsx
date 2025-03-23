@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css";
-import EditUserForm from "../components/EditUser"; // Import the new component
+import EditUserForm from "../components/EditUser";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);

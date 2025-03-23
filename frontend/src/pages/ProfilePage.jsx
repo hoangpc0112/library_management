@@ -193,28 +193,6 @@ const ProfilePage = () => {
   return (
     <div className="min-vh-100 py-5">
       <div className="container">
-        <div className="row mb-5">
-          <div className="col-12">
-            <div className="bg-primary text-white rounded-3 p-4 shadow">
-              <div className="row align-items-center">
-                <div className="col-md-8">
-                  <h1 className="display-5 fw-bold">Hồ sơ sinh viên</h1>
-                  <p className="lead mb-0">
-                    Quản lý thông tin cá nhân và theo dõi hoạt động mượn trả
-                    sách tại thư viện PTIT
-                  </p>
-                </div>
-                <div className="col-md-4 text-md-end mt-3 mt-md-0">
-                  <button className="btn btn-outline-light me-2">
-                    <i className="bi bi-pencil-square me-1"></i> Cập nhật thông
-                    tin
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div className="row">
           <div className="col-lg-4 mb-4">
             <div className="card border-0 shadow-sm rounded-3">
@@ -405,9 +383,9 @@ const ProfilePage = () => {
                       <i className="bi bi-book fs-1 d-block mb-3"></i>
                       <h5>Bạn chưa mượn sách nào</h5>
                       <p>Hãy tìm và mượn sách từ thư viện</p>
-                      <button className="btn btn-primary">
+                      <Link to="/book" className="btn btn-primary">
                         <i className="bi bi-search me-1"></i> Tìm sách
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 )}

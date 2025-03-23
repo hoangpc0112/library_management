@@ -6,7 +6,7 @@
 
 .input {
   width: 100%;
-  height: 45px;
+  height: 6vh;
   padding-left: 3rem !important;
   box-shadow: 0 0 0 0.25px #2b2c37, 0 0 25px -17px #000;
   border: 0;
@@ -14,6 +14,7 @@
   background-color: #16171d;
   outline: none;
   color: #bdbecb;
+  font-size: 1.5rem;
 }
 
 .input::placeholder {

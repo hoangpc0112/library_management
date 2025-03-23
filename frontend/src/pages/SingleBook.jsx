@@ -54,7 +54,6 @@ const SingleBook = () => {
         (request) => request.book_id === parseInt(id)
       );
 
-      // Check for pending or approved requests
       const pendingRequest = userRequests.find(
         (request) => request.status === "pending"
       );
@@ -258,9 +257,17 @@ const SingleBook = () => {
                     onClick={handleBorrow}
                     className="btn btn-primary flex-grow-1"
                   >
-                    Mượn sách này
+                    Mượn sách
                   </button>
                 )}
+                {book.gg_drive_link ? (
+                  <button
+                    className="btn btn-secondary flex-grow-1"
+                    onClick={() => window.open(book.gg_drive_link, "_blank")}
+                  >
+                    Xem trước
+                  </button>
+                ) : null}
                 {isAdmin() ? (
                   <>
                     <button

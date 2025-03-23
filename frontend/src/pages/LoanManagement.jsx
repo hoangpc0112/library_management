@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaExchangeAlt } from "react-icons/fa";
 
 const LoanManagement = () => {
   const [loans, setLoans] = useState([]);
@@ -23,7 +22,6 @@ const LoanManagement = () => {
         (loan) => loan.status === "approved" && !loan.actual_return_date
       );
 
-      // Fetch user and book details for each loan
       const enrichedLoans = await Promise.all(
         approvedLoans.map(async (loan) => {
           const [userResponse, bookResponse] = await Promise.all([

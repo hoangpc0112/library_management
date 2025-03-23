@@ -56,7 +56,7 @@ def get_users(
 @router.put("/{id}")
 def update_user(
     id: int,
-    user: schemas.UserUpdate,  # You'll need to define this schema
+    user: schemas.UserUpdate,
     db: Session = Depends(get_db),
     current_user=Depends(oauth2.get_current_user)
 ):
@@ -73,7 +73,6 @@ def update_user(
             detail="Không tìm thấy người dùng."
         )
 
-    # Update only the fields that are provided
     update_data = user.dict(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_user, key, value)

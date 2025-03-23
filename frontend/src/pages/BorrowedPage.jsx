@@ -152,7 +152,7 @@ const BorrowedPage = () => {
             Bạn chưa mượn sách nào. Hãy tìm và mượn sách từ thư viện của chúng
             tôi.
           </p>
-          <Link to="/" className="btn btn-primary mt-2">
+          <Link to="/book" className="btn btn-primary mt-2">
             Duyệt sách
           </Link>
         </div>
@@ -207,7 +207,7 @@ const BorrowedPage = () => {
                       )}
 
                       <div className="d-flex justify-content-between align-items-center mb-2">
-                        <span>Ngày mượn:</span>
+                        <span>Ngày tạo:</span>
                         <span>
                           {new Date(borrow.created_at).toLocaleDateString(
                             "vi-VN"
@@ -217,7 +217,7 @@ const BorrowedPage = () => {
 
                       {borrow.borrow_date && (
                         <div className="d-flex justify-content-between align-items-center mb-2">
-                          <span>Ngày nhận sách:</span>
+                          <span>Ngày mượn:</span>
                           <span>
                             {new Date(borrow.borrow_date).toLocaleDateString(
                               "vi-VN"
