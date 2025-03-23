@@ -166,7 +166,10 @@ const ProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="min-vh-100 d-flex justify-content-center align-items-center">
+      <div
+        className="container text-center py-5"
+        style={{ minHeight: "100vh" }}
+      >
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Đang tải...</span>
         </div>

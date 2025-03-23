@@ -78,9 +78,16 @@ const LoanManagement = () => {
       {error && <div className="alert alert-danger">{error}</div>}
 
       {loading ? (
-        <div>Loading...</div>
+        <div
+          className="container text-center py-5"
+          style={{ minHeight: "100vh" }}
+        >
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Đang tải...</span>
+          </div>
+        </div>
       ) : (
-        <table className="table table-striped">
+        <table className="table table-bordered table-striped">
           <thead>
             <tr>
               <th>STT</th>

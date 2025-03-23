@@ -114,9 +114,12 @@ const AdminBorrowRequest = () => {
       )}
 
       {loading ? (
-        <div className="text-center">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
+        <div
+          className="container text-center py-5"
+          style={{ minHeight: "100vh" }}
+        >
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Đang tải...</span>
           </div>
         </div>
       ) : borrowRequests.length === 0 ? (

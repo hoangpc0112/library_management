@@ -18,7 +18,16 @@ const AdminRoute = () => {
   }, [loading, isAuthenticated, isAdmin, navigate]);
 
   if (loading) {
-    return <div>Đang tải...</div>;
+    return (
+      <div
+        className="container text-center py-5"
+        style={{ minHeight: "100vh" }}
+      >
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Đang tải...</span>
+        </div>
+      </div>
+    );
   }
 
   return isAuthenticated && isAdmin() ? <Outlet /> : null;

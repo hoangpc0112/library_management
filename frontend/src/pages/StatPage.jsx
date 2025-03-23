@@ -30,7 +30,7 @@ const Statistics = () => {
         axios.get("http://localhost:8000/user/", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get("http://localhost:8000/borrow/", {
+        axios.get("http://localhost:8000/borrow/all", {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -97,7 +97,14 @@ const Statistics = () => {
       {error && <div className="alert alert-danger">{error}</div>}
 
       {loading ? (
-        <div className="text-center">Đang tải dữ liệu...</div>
+        <div
+          className="container text-center py-5"
+          style={{ minHeight: "100vh" }}
+        >
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Đang tải...</span>
+          </div>
+        </div>
       ) : (
         <div className="row g-4">
           <div className="col-md-6 col-lg-4">
@@ -142,7 +149,7 @@ const Statistics = () => {
                 <h5 className="mb-2 mt-2">Top 5 sách được mượn nhiều nhất</h5>
               </div>
               <div className="card-body">
-                <table className="table table-striped mb-0">
+                <table className="table table-striped table-bordered mb-0">
                   <thead>
                     <tr>
                       <th>STT</th>
@@ -170,7 +177,7 @@ const Statistics = () => {
                 <h5 className="mb-2 mt-2">Top 5 người mượn sách nhiều nhất</h5>
               </div>
               <div className="card-body">
-                <table className="table table-striped mb-0">
+                <table className="table table-striped table-bordered mb-0">
                   <thead>
                     <tr>
                       <th>STT</th>
