@@ -14,6 +14,7 @@ const BorrowRequest = ({ bookId, onSuccess, onCancel }) => {
   const [returnDate, setReturnDate] = useState(
     new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
   );
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,7 +48,7 @@ const BorrowRequest = ({ bookId, onSuccess, onCancel }) => {
       const formattedBorrowDate = borrowDateObj.toISOString();
       const formattedReturnDate = returnDateObj.toISOString();
 
-      await axiosInstance.post(`http://localhost:8000/borrow/${bookId}`, {
+      await axiosInstance.post(`${API_URL}/borrow/${bookId}`, {
         borrow_date: formattedBorrowDate,
         return_date: formattedReturnDate,
       });

@@ -7,6 +7,7 @@ const BorrowedPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [books, setBooks] = useState({});
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     document.title = "Sách đang mượn";
@@ -61,12 +62,10 @@ const BorrowedPage = () => {
         },
       });
 
-      const borrowsResponse = await axiosInstance.get(
-        "http://localhost:8000/borrow/"
-      );
+      const borrowsResponse = await axiosInstance.get(`${API_URL}/borrow/`);
 
       const bookPromises = borrowsResponse.data.map((borrow) =>
-        axiosInstance.get(`http://localhost:8000/book/${borrow.book_id}`)
+        axiosInstance.get(`${API_URL}/book/${borrow.book_id}`)
       );
 
       const bookResponses = await Promise.all(bookPromises);
@@ -105,9 +104,7 @@ const BorrowedPage = () => {
           },
         });
 
-        await axiosInstance.put(
-          `http://localhost:8000/borrow/${borrowId}/return`
-        );
+        await axiosInstance.put(`${API_URL}/borrow/${borrowId}/return`);
         alert("Sách đã được trả thành công!");
         fetchBorrowedBooks();
       } catch (err) {

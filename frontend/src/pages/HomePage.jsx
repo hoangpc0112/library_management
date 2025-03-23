@@ -6,6 +6,7 @@ import BookList from "../components/BookList";
 
 const HomePage = () => {
   const token = localStorage.getItem("token");
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -40,12 +41,12 @@ const HomePage = () => {
       <SearchInput />
       <Carousel
         title="Được yêu thích hàng đầu"
-        endpoint="http://localhost:8000/book/?page=1&size=10&sort=average_rating&order=desc"
+        endpoint={`${API_URL}/book/?page=1&size=10&sort=average_rating&order=desc`}
       />
       <hr className="container border-2" />
       <Carousel
         title="Đang thịnh hành"
-        endpoint="http://localhost:8000/recommendation/trending"
+        endpoint={`${API_URL}/recommendation/trending`}
       />
       <hr className="container border-2" />
       <h2 className="container mb-4">Gợi ý cho bạn</h2>

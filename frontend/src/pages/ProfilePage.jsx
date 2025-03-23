@@ -17,6 +17,7 @@ const ProfilePage = () => {
   const [error, setError] = useState(null);
   const [currentBorrows, setCurrentBorrows] = useState([]);
   const [booksData, setBooksData] = useState({});
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -27,20 +28,17 @@ const ProfilePage = () => {
         setLoading(true);
         const token = localStorage.getItem("token");
 
-        const response = await axios.get("http://localhost:8000/user/me", {
+        const response = await axios.get(`${API_URL}/user/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        const borrowResponse = await axios.get(
-          "http://localhost:8000/borrow/",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const borrowResponse = await axios.get(`${API_URL}/borrow/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         const activeBorrows = borrowResponse.data.filter(
           (borrow) => borrow.status === "approved"
@@ -60,9 +58,7 @@ const ProfilePage = () => {
         await Promise.all(
           uniqueBookIds.map(async (bookId) => {
             try {
-              const bookResponse = await axios.get(
-                `http://localhost:8000/book/${bookId}`
-              );
+              const bookResponse = await axios.get(`${API_URL}/book/${bookId}`);
               booksInfo[bookId] = bookResponse.data;
             } catch (err) {
               booksInfo[bookId] = { title: `Sách #${bookId}` };

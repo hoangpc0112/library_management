@@ -12,6 +12,7 @@ const Statistics = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     fetchStats();
@@ -24,13 +25,13 @@ const Statistics = () => {
       const token = localStorage.getItem("token");
 
       const [booksResponse, usersResponse, borrowResponse] = await Promise.all([
-        axios.get("http://localhost:8000/book/", {
+        axios.get(`${API_URL}/book/`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get("http://localhost:8000/user/", {
+        axios.get(`${API_URL}/user/`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get("http://localhost:8000/borrow/all", {
+        axios.get(`${API_URL}/borrow/all`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);

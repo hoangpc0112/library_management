@@ -13,6 +13,7 @@ const EditBookForm = ({ book, onCancel, onSuccess }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     if (book) {
@@ -58,13 +59,10 @@ const EditBookForm = ({ book, onCancel, onSuccess }) => {
         published_year: formData.published_year
           ? parseInt(formData.published_year, 10)
           : null,
-        num_pages: formData.num_pages ? parseInt(formData.num_pages, 10) : null, // Cho phép null
+        num_pages: formData.num_pages ? parseInt(formData.num_pages, 10) : null,
       };
 
-      await axiosInstance.put(
-        `http://localhost:8000/book/${book.id}`,
-        dataToSubmit
-      );
+      await axiosInstance.put(`${API_URL}/book/${book.id}`, dataToSubmit);
 
       setLoading(false);
       onSuccess();

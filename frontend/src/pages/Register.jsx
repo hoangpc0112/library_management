@@ -15,6 +15,7 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   const navigate = useNavigate();
 
@@ -59,7 +60,7 @@ export default function Register() {
     };
 
     axios
-      .post("http://localhost:8000/register", userData)
+      .post(`${API_URL}/register`, userData)
       .then((res) => {
         alert("Đăng ký thành công");
         navigate("/login");

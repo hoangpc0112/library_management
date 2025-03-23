@@ -15,6 +15,7 @@ function BookList({ apiEndpoint = "book" }) {
   const queryParams = new URLSearchParams(location.search);
   const currentPage = parseInt(queryParams.get("page")) || 1;
   const search = queryParams.get("search") || "";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -38,7 +39,7 @@ function BookList({ apiEndpoint = "book" }) {
           };
         }
 
-        let url = `http://localhost:8000/${apiEndpoint}/`;
+        let url = `${API_URL}/${apiEndpoint}/`;
 
         if (apiEndpoint === "book") {
           url += `?page=${currentPage}&search=${search}`;

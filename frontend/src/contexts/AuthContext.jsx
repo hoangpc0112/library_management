@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -24,9 +25,7 @@ export const AuthProvider = ({ children }) => {
           },
         });
 
-        const response = await axiosInstance.get(
-          "http://localhost:8000/user/me"
-        );
+        const response = await axiosInstance.get(`${API_URL}/user/me`);
         setCurrentUser(response.data);
         setIsAuthenticated(true);
       } catch (error) {
@@ -44,10 +43,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      const response = await axios.post(
-        "http://localhost:8000/login/",
-        credentials
-      );
+      const response = await axios.post(`${API_URL}/login/`, credentials);
       localStorage.setItem("token", response.data.token);
       setCurrentUser(response.data.user);
       setIsAuthenticated(true);

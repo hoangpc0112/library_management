@@ -13,6 +13,7 @@ const EditUserForm = ({ user, onCancel, onSuccess }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     if (user) {
@@ -58,10 +59,7 @@ const EditUserForm = ({ user, onCancel, onSuccess }) => {
         birth_year: parseInt(formData.birth_year, 10),
       };
 
-      await axiosInstance.put(
-        `http://localhost:8000/user/${user.id}`,
-        dataToSubmit
-      );
+      await axiosInstance.put(`${API_URL}/user/${user.id}`, dataToSubmit);
 
       setLoading(false);
       onSuccess();

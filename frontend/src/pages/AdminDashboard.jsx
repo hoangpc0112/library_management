@@ -28,6 +28,7 @@ const AdminDashboard = () => {
     gg_drive_link: "",
   });
   const [error, setError] = useState("");
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -39,29 +40,23 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const booksResponse = await axios.get("http://localhost:8000/book/");
+      const booksResponse = await axios.get(`${API_URL}/book/`);
       const totalBooks =
         booksResponse.data.total_books || booksResponse.data.books.length;
 
-      const usersResponse = await axios.get("http://localhost:8000/user/", {
+      const usersResponse = await axios.get(`${API_URL}/user/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const totalUsers = usersResponse.data.length || 0;
 
-      const borrowResponse = await axios.get(
-        "http://localhost:8000/borrow/requests",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const borrowResponse = await axios.get(`${API_URL}/borrow/requests`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const pendingRequests = borrowResponse.data.length;
 
-      const activeLoansResponse = await axios.get(
-        "http://localhost:8000/borrow/",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const activeLoansResponse = await axios.get(`${API_URL}/borrow/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const activeLoans = activeLoansResponse.data.filter(
         (borrow) => borrow.status === "approved"
       ).length;
@@ -97,7 +92,7 @@ const AdminDashboard = () => {
         gg_drive_link: formData.gg_drive_link || null,
       };
 
-      await axios.post("http://localhost:8000/book/", dataToSubmit, {
+      await axios.post(`${API_URL}/book/`, dataToSubmit, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

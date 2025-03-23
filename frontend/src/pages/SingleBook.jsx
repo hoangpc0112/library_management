@@ -17,6 +17,7 @@ const SingleBook = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const { isAdmin, currentUser } = useAuth();
   const [borrowStatus, setBorrowStatus] = useState(null);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -25,7 +26,7 @@ const SingleBook = () => {
   const fetchBook = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:8000/book/${id}`);
+      const response = await axios.get(`${API_URL}/book/${id}`);
       setBook(response.data);
       setError(false);
     } catch (err) {
@@ -49,7 +50,7 @@ const SingleBook = () => {
         },
       });
 
-      const response = await axiosInstance.get(`http://localhost:8000/borrow/`);
+      const response = await axiosInstance.get(`${API_URL}/borrow/`);
       const userRequests = response.data.filter(
         (request) => request.book_id === parseInt(id)
       );
@@ -106,7 +107,7 @@ const SingleBook = () => {
           },
         });
 
-        await axiosInstance.delete(`http://localhost:8000/book/${id}`);
+        await axiosInstance.delete(`${API_URL}/book/${id}`);
         navigate(-1);
       } catch (err) {
         console.error("Lỗi khi xóa sách:", err);

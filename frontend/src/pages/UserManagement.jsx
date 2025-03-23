@@ -7,6 +7,7 @@ const UserManagement = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     fetchUsers();
@@ -17,7 +18,7 @@ const UserManagement = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:8000/user/", {
+      const response = await axios.get(`${API_URL}/user/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(response.data);
@@ -36,7 +37,7 @@ const UserManagement = () => {
     if (window.confirm("Bạn có chắc muốn xóa người dùng này?")) {
       try {
         const token = localStorage.getItem("token");
-        await axios.delete(`http://localhost:8000/user/${id}`, {
+        await axios.delete(`${API_URL}/user/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         fetchUsers();

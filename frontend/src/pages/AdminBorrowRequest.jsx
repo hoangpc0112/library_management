@@ -8,6 +8,7 @@ const AdminBorrowRequest = () => {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
   const token = localStorage.getItem("token");
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     fetchBorrowRequests();
@@ -16,21 +17,18 @@ const AdminBorrowRequest = () => {
   const fetchBorrowRequests = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        "http://localhost:8000/borrow/requests",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await axios.get(`${API_URL}/borrow/requests`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const requestsWithDetails = await Promise.all(
         response.data.map(async (request) => {
           const bookResponse = await axios.get(
-            `http://localhost:8000/book/${request.book_id}`,
+            `${API_URL}/book/${request.book_id}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           const userResponse = await axios.get(
-            `http://localhost:8000/user/${request.user_id}`,
+            `${API_URL}/user/${request.user_id}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           return {
@@ -54,7 +52,7 @@ const AdminBorrowRequest = () => {
   const handleAction = async (id, action) => {
     try {
       await axios.put(
-        `http://localhost:8000/borrow/${id}/${action}`,
+        `${API_URL}/borrow/${id}/${action}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

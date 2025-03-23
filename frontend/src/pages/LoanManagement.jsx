@@ -5,6 +5,7 @@ const LoanManagement = () => {
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     fetchLoans();
@@ -15,7 +16,7 @@ const LoanManagement = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:8000/borrow/", {
+      const response = await axios.get(`${API_URL}/borrow/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const approvedLoans = response.data.filter(
@@ -25,10 +26,10 @@ const LoanManagement = () => {
       const enrichedLoans = await Promise.all(
         approvedLoans.map(async (loan) => {
           const [userResponse, bookResponse] = await Promise.all([
-            axios.get(`http://localhost:8000/user/${loan.user_id}`, {
+            axios.get(`${API_URL}/user/${loan.user_id}`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
-            axios.get(`http://localhost:8000/book/${loan.book_id}`, {
+            axios.get(`${API_URL}/book/${loan.book_id}`, {
               headers: { Authorization: `Bearer ${token}` },
             }),
           ]);
@@ -55,7 +56,7 @@ const LoanManagement = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        `http://localhost:8000/borrow/${id}/return`,
+        `${API_URL}/borrow/${id}/return`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

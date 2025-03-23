@@ -12,6 +12,7 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,7 +22,7 @@ export default function Login() {
     formData.append("password", password);
 
     axios
-      .post("http://localhost:8000/login", formData, {
+      .post(`${API_URL}/login`, formData, {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
