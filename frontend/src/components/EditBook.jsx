@@ -57,7 +57,7 @@ const EditBookForm = ({ book, onCancel, onSuccess }) => {
         ...formData,
         published_year: formData.published_year
           ? parseInt(formData.published_year, 10)
-          : null, // Cho phép null
+          : null,
         num_pages: formData.num_pages ? parseInt(formData.num_pages, 10) : null, // Cho phép null
       };
 
