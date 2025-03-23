@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
         });
 
         const response = await axiosInstance.get(
-          "http://localhost:8000/profile/"
+          "http://localhost:8000/user/me"
         );
         setCurrentUser(response.data);
         setIsAuthenticated(true);

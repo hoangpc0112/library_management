@@ -1,0 +1,34 @@
+.group {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.input {
+  width: 100%;
+  height: 45px;
+  padding-left: 3rem !important;
+  box-shadow: 0 0 0 0.25px #2b2c37, 0 0 25px -17px #000;
+  border: 0;
+  border-radius: 12px;
+  background-color: #16171d;
+  outline: none;
+  color: #bdbecb;
+}
+
+.input::placeholder {
+  color: #bdbecb;
+}
+
+.input:focus {
+  box-shadow: 0 0 0 2px var(--bs-primary);
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  fill: var(--bs-secondary);
+  width: 1.2rem;
+  height: 1.2rem;
+  pointer-events: none;
+}

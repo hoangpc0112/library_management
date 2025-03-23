@@ -4,6 +4,7 @@ import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import EditBook from "../components/EditBook";
 import BorrowRequest from "../components/BorrowRequest";
+import Carousel from "../components/Carousel";
 
 const SingleBook = () => {
   const { id } = useParams();
@@ -15,7 +16,7 @@ const SingleBook = () => {
   const [isBorrowing, setIsBorrowing] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const { isAdmin, currentUser } = useAuth();
-  const [hasPendingRequest, setHasPendingRequest] = useState(false);
+  const [borrowStatus, setBorrowStatus] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -35,7 +36,7 @@ const SingleBook = () => {
     }
   };
 
-  const checkPendingRequests = async () => {
+  const checkBorrowStatus = async () => {
     if (!currentUser) return;
 
     try {
@@ -49,14 +50,27 @@ const SingleBook = () => {
       });
 
       const response = await axiosInstance.get(`http://localhost:8000/borrow/`);
-      const pendingRequest = response.data.find(
-        (request) =>
-          request.book_id === parseInt(id) && request.status === "pending"
+      const userRequests = response.data.filter(
+        (request) => request.book_id === parseInt(id)
       );
 
-      setHasPendingRequest(!!pendingRequest);
+      // Check for pending or approved requests
+      const pendingRequest = userRequests.find(
+        (request) => request.status === "pending"
+      );
+      const approvedRequest = userRequests.find(
+        (request) => request.status === "approved"
+      );
+
+      if (pendingRequest) {
+        setBorrowStatus("pending");
+      } else if (approvedRequest) {
+        setBorrowStatus("approved");
+      } else {
+        setBorrowStatus(null);
+      }
     } catch (err) {
-      console.error("Lỗi khi kiểm tra yêu cầu mượn sách:", err);
+      console.error("Lỗi khi kiểm tra trạng thái mượn sách:", err);
     }
   };
 
@@ -66,7 +80,7 @@ const SingleBook = () => {
 
   useEffect(() => {
     if (currentUser) {
-      checkPendingRequests();
+      checkBorrowStatus();
     }
   }, [currentUser, id]);
 
@@ -121,7 +135,7 @@ const SingleBook = () => {
 
   const handleBorrowSuccess = () => {
     setIsBorrowing(false);
-    setHasPendingRequest(true);
+    setBorrowStatus("pending");
     alert("Yêu cầu mượn sách đã được gửi thành công! Chờ quản lý phê duyệt.");
   };
 
@@ -231,9 +245,13 @@ const SingleBook = () => {
                 đánh giá cao bởi độc giả.
               </p>
               <div className="d-flex justify-content-between gap-3">
-                {hasPendingRequest ? (
+                {borrowStatus === "pending" ? (
                   <button className="btn btn-secondary flex-grow-1" disabled>
                     Yêu cầu mượn đang chờ phê duyệt
+                  </button>
+                ) : borrowStatus === "approved" ? (
+                  <button className="btn btn-success flex-grow-1" disabled>
+                    Bạn đang mượn cuốn sách này
                   </button>
                 ) : (
                   <button
@@ -262,6 +280,11 @@ const SingleBook = () => {
                 ) : null}
               </div>
             </div>
+            <hr className="container border-2 mt-5" />
+            <Carousel
+              title="Những cuốn sách khác bạn có thể thích"
+              endpoint={`http://localhost:8000/recommendation/${id}`}
+            />
           </div>
         </div>
       </div>

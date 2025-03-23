@@ -9,32 +9,14 @@ import {
   FaGraduationCap,
   FaBirthdayCake,
 } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const ProfilePage = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const [currentBorrows] = useState([
-    {
-      id: 1,
-      title: "Lập trình Python cơ bản",
-      borrowDate: "12/02/2025",
-      dueDate: "26/02/2025",
-    },
-    {
-      id: 2,
-      title: "Cấu trúc dữ liệu và giải thuật",
-      borrowDate: "05/03/2025",
-      dueDate: "19/03/2025",
-    },
-    {
-      id: 3,
-      title: "Mạng máy tính",
-      borrowDate: "10/03/2025",
-      dueDate: "24/03/2025",
-    },
-  ]);
+  const [currentBorrows, setCurrentBorrows] = useState([]);
+  const [booksData, setBooksData] = useState({});
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -45,23 +27,63 @@ const ProfilePage = () => {
         setLoading(true);
         const token = localStorage.getItem("token");
 
-        const response = await axios.get("http://localhost:8000/profile", {
+        const response = await axios.get("http://localhost:8000/user/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
+        const borrowResponse = await axios.get(
+          "http://localhost:8000/borrow/",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const activeBorrows = borrowResponse.data.filter(
+          (borrow) => borrow.status === "approved"
+        );
+
+        const returnedBorrows = borrowResponse.data.filter(
+          (borrow) => borrow.status === "returned"
+        );
+
+        const bookIds = [...activeBorrows, ...returnedBorrows].map(
+          (item) => item.book_id
+        );
+        const uniqueBookIds = [...new Set(bookIds)];
+
+        const booksInfo = {};
+
+        await Promise.all(
+          uniqueBookIds.map(async (bookId) => {
+            try {
+              const bookResponse = await axios.get(
+                `http://localhost:8000/book/${bookId}`
+              );
+              booksInfo[bookId] = bookResponse.data;
+            } catch (err) {
+              booksInfo[bookId] = { title: `Sách #${bookId}` };
+            }
+          })
+        );
+
+        setBooksData(booksInfo);
+
         setUserData({
           ...response.data,
           avatar:
             "https://i.pinimg.com/736x/21/91/6e/21916e491ef0d796398f5724c313bbe7.jpg",
-          borrowedBooks: 3,
-          returnedBooks: 8,
+          borrowedBooks: activeBorrows.length,
+          returnedBooks: returnedBorrows.length,
           createdAt: formatCreatedAt(response.data.created_at),
         });
+
+        setCurrentBorrows(activeBorrows);
         setLoading(false);
       } catch (err) {
-        console.error("Error fetching user profile:", err);
         setError("Không thể tải thông tin người dùng. Vui lòng thử lại sau.");
         setLoading(false);
       }
@@ -78,6 +100,68 @@ const ProfilePage = () => {
     )
       .toString()
       .padStart(2, "0")}/${date.getFullYear()}`;
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return `${date.getDate().toString().padStart(2, "0")}/${(
+      date.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}/${date.getFullYear()}`;
+  };
+
+  const getBookStatus = (returnDate) => {
+    const dueDate = new Date(returnDate);
+    const today = new Date();
+    const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+
+    if (daysLeft <= 0) {
+      return {
+        class: "bg-danger",
+        text: "Quá hạn",
+      };
+    } else if (daysLeft <= 3) {
+      return {
+        class: "bg-warning",
+        text: "Sắp hết hạn",
+      };
+    } else {
+      return {
+        class: "bg-success",
+        text: "Còn hạn",
+      };
+    }
+  };
+
+  const getAccountStatus = () => {
+    const overdue = currentBorrows.some((book) => {
+      const dueDate = new Date(book.return_date);
+      const today = new Date();
+      return dueDate < today;
+    });
+
+    if (overdue) {
+      return {
+        class: "text-danger",
+        text: "Có sách quá hạn",
+        icon: "bi bi-exclamation-circle",
+      };
+    } else {
+      return {
+        class: "text-success",
+        text: "Tốt",
+        icon: "bi bi-check-circle",
+      };
+    }
+  };
+
+  const getBookTitle = (bookId) => {
+    if (booksData[bookId]) {
+      return booksData[bookId].title;
+    }
+    return `Sách #${bookId}`;
   };
 
   if (loading) {
@@ -103,6 +187,8 @@ const ProfilePage = () => {
   if (!userData) {
     return null;
   }
+
+  const accountStatus = getAccountStatus();
 
   return (
     <div className="min-vh-100 py-5">
@@ -242,12 +328,14 @@ const ProfilePage = () => {
                       </div>
                       <h5 className="card-title mb-0">Trạng thái</h5>
                     </div>
-                    <h3 className="text-success fw-bold mb-0">
-                      <i className="bi bi-check-circle me-2"></i>
-                      Tốt
+                    <h3 className={`${accountStatus.class} fw-bold mb-0`}>
+                      <i className={`${accountStatus.icon} me-2`}></i>
+                      {accountStatus.text}
                     </h3>
                     <p className="text-muted mt-2 mb-0">
-                      Không có sách quá hạn
+                      {accountStatus.text === "Tốt"
+                        ? "Không có sách quá hạn"
+                        : "Vui lòng trả sách đúng hạn"}
                     </p>
                   </div>
                 </div>
@@ -259,62 +347,75 @@ const ProfilePage = () => {
                 <h4 className="mb-0 fw-bold">Sách đang mượn</h4>
               </div>
               <div className="card-body p-0">
-                <div className="table-responsive">
-                  <table className="table mb-0 table-hover">
-                    <thead className="table">
-                      <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Tên sách</th>
-                        <th scope="col">Ngày mượn</th>
-                        <th scope="col">Hạn trả</th>
-                        <th scope="col">Trạng thái</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentBorrows.map((book, index) => {
-                        const dueDate = new Date(
-                          book.dueDate.split("/").reverse().join("-")
-                        );
-                        const today = new Date();
-                        const daysLeft = Math.ceil(
-                          (dueDate - today) / (1000 * 60 * 60 * 24)
-                        );
+                {currentBorrows.length > 0 ? (
+                  <div className="table-responsive">
+                    <table className="table mb-0 table-hover">
+                      <thead className="table">
+                        <tr>
+                          <th scope="col">#</th>
+                          <th
+                            scope="col"
+                            style={{
+                              maxWidth: "200px",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            Tên sách
+                          </th>
+                          <th scope="col">Ngày mượn</th>
+                          <th scope="col">Hạn trả</th>
+                          <th scope="col">Trạng thái</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentBorrows.map((book, index) => {
+                          const status = getBookStatus(book.return_date);
 
-                        let statusClass = "bg-success";
-                        let statusText = "Còn hạn";
-
-                        if (daysLeft <= 3) {
-                          statusClass = "bg-warning";
-                          statusText = "Sắp hết hạn";
-                        }
-
-                        if (daysLeft <= 0) {
-                          statusClass = "bg-danger";
-                          statusText = "Quá hạn";
-                        }
-
-                        return (
-                          <tr key={book.id}>
-                            <th scope="row">{index + 1}</th>
-                            <td>{book.title}</td>
-                            <td>{book.borrowDate}</td>
-                            <td>{book.dueDate}</td>
-                            <td>
-                              <span className={`badge ${statusClass}`}>
-                                {statusText}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                          return (
+                            <tr key={book.id}>
+                              <th scope="row">{index + 1}</th>
+                              <td
+                                style={{
+                                  maxWidth: "200px",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
+                              >
+                                {getBookTitle(book.book_id)}
+                              </td>
+                              <td>{formatDate(book.borrow_date)}</td>
+                              <td>{formatDate(book.return_date)}</td>
+                              <td>
+                                <span className={`badge ${status.class}`}>
+                                  {status.text}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-5">
+                    <div className="text-muted">
+                      <i className="bi bi-book fs-1 d-block mb-3"></i>
+                      <h5>Bạn chưa mượn sách nào</h5>
+                      <p>Hãy tìm và mượn sách từ thư viện</p>
+                      <button className="btn btn-primary">
+                        <i className="bi bi-search me-1"></i> Tìm sách
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="card-footer border-0 py-3">
-                <button className="btn btn-outline-primary">
+                <Link to="/borrowed" className="btn btn-outline-primary">
                   <i className="bi bi-list me-1"></i> Xem lịch sử mượn sách
-                </button>
+                </Link>
               </div>
             </div>
 

@@ -19,6 +19,9 @@ import AdminDashboard from "./pages/AdminDashboard";
 import { AuthProvider } from "./contexts/AuthContext";
 import AdminRoute from "./components/AdminRoute";
 import AdminBorrowRequest from "./pages/AdminBorrowRequest";
+import StatPage from "./pages/StatPage";
+import LoanManagement from "./pages/LoanManagement";
+import UserManagement from "./pages/UserManagement";
 
 function App() {
   const router = createBrowserRouter(
@@ -37,6 +40,9 @@ function App() {
         <Route path="admin/" element={<AdminRoute />}>
           <Route index element={<AdminDashboard />} />
           <Route path="borrow-requests" element={<AdminBorrowRequest />} />
+          <Route path="stat" element={<StatPage />} />
+          <Route path="loan" element={<LoanManagement />} />
+          <Route path="user" element={<UserManagement />} />
         </Route>
       </Route>
     )

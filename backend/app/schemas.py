@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 
@@ -21,6 +21,18 @@ class UserOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class UserUpdate(BaseModel):
+    full_name: str | None = None
+    email: str | None = None
+    msv: str | None = None
+    faculty: str | None = None
+    major: str | None = None
+    birth_year: int | None = None
+    is_admin: bool | None = None
+
+    class Config:
+        orm_mode = True
 
 
 class UserLogin(BaseModel):

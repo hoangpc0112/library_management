@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import BookList from "../components/BookList";
+import SearchInput from "../components/SearchInput";
 
 const BookPage = () => {
   useEffect(() => {
@@ -9,7 +10,8 @@ const BookPage = () => {
 
   return (
     <div>
-      <BookList />
+      <SearchInput />
+      <BookList apiEndpoint="book" />
     </div>
   );
 };

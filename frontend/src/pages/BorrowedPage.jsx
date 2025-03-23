@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "../contexts/AuthContext";
 
 const BorrowedPage = () => {
-  const { currentUser } = useAuth();
   const [borrowedBooks, setBorrowedBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -67,7 +65,6 @@ const BorrowedPage = () => {
         "http://localhost:8000/borrow/"
       );
 
-      // Fetch book details for each borrowed book
       const bookPromises = borrowsResponse.data.map((borrow) =>
         axiosInstance.get(`http://localhost:8000/book/${borrow.book_id}`)
       );
@@ -148,8 +145,6 @@ const BorrowedPage = () => {
 
   return (
     <div className="container my-5">
-      <h1 className="mb-4">Sách của tôi</h1>
-
       {borrowedBooks.length === 0 ? (
         <div className="alert alert-info p-4 shadow-sm">
           <h4 className="alert-heading">Không có sách nào</h4>

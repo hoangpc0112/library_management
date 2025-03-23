@@ -1,21 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Carousel from "../components/Carousel";
 import "../css/HomePage.css";
-import { useNavigate } from "react-router-dom";
+import SearchInput from "../components/SearchInput";
+import BookList from "../components/BookList";
 
 const HomePage = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = "Trang chủ - Thư viện PTIT";
   }, []);
-
-  const handleSearch = (event) => {
-    event.preventDefault();
-    navigate(`book/?search=${searchTerm}`);
-  };
 
   return (
     <div>
@@ -42,26 +37,23 @@ const HomePage = () => {
           </div>
         </div>
       </div>
-
-      <div className="d-flex justify-content-center mt-5 mb-5">
-        <form className="d-flex w-50" onSubmit={handleSearch}>
-          <input
-            type="text"
-            className="form-control me-2 shadow-sm border-2"
-            placeholder="Tìm kiếm sách..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <button className="btn btn-primary" type="submit">
-            Tìm kiếm
-          </button>
-        </form>
-      </div>
-
+      <SearchInput />
       <Carousel
-        title="Top 10 cuốn sách được yêu thích nhất"
-        endpoint={`http://localhost:8000/book/?page=1&size=10&sort=average_rating&order=desc`}
+        title="Được yêu thích hàng đầu"
+        endpoint="http://localhost:8000/book/?page=1&size=10&sort=average_rating&order=desc"
       />
+      <hr className="container border-2" />
+      <Carousel
+        title="Đang thịnh hành"
+        endpoint="http://localhost:8000/recommendation/trending"
+      />
+      <hr className="container border-2" />
+      <h2 className="container mb-4">Gợi ý cho bạn</h2>
+      {token ? (
+        <BookList apiEndpoint="recommendation/user" />
+      ) : (
+        <BookList apiEndpoint="book" />
+      )}
     </div>
   );
 };

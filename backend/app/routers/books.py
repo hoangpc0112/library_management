@@ -34,7 +34,8 @@ def get_all(
     return {
         "total_pages": total_pages,
         "current_page": page,
-        "books": books
+        "books": books,
+        "total_books": total_books
     }
 
 

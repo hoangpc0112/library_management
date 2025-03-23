@@ -30,7 +30,7 @@ const AdminBorrowRequest = () => {
             { headers: { Authorization: `Bearer ${token}` } }
           );
           const userResponse = await axios.get(
-            `http://localhost:8000/profile/${request.user_id}`,
+            `http://localhost:8000/user/${request.user_id}`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
           return {

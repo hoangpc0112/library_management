@@ -20,6 +20,19 @@ const BorrowRequest = ({ bookId, onSuccess, onCancel }) => {
     setLoading(true);
     setError("");
 
+    const borrowDateObj = new Date(borrowDate);
+    const returnDateObj = new Date(returnDate);
+    const maxBorrowTime = 30 * 24 * 60 * 60 * 1000; // 30 ngày
+
+    // Kiểm tra nếu thời gian mượn vượt quá 30 ngày
+    if (returnDateObj - borrowDateObj > maxBorrowTime) {
+      setLoading(false);
+      setError(
+        "Thời gian mượn sách tối đa là 30 ngày. Vui lòng chọn ngày trả hợp lệ."
+      );
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -32,11 +45,9 @@ const BorrowRequest = ({ bookId, onSuccess, onCancel }) => {
         },
       });
 
-      // Format dates for the API
-      const formattedBorrowDate = new Date(borrowDate).toISOString();
-      const formattedReturnDate = new Date(returnDate).toISOString();
+      const formattedBorrowDate = borrowDateObj.toISOString();
+      const formattedReturnDate = returnDateObj.toISOString();
 
-      // Send request with dates
       await axiosInstance.post(`http://localhost:8000/borrow/${bookId}`, {
         borrow_date: formattedBorrowDate,
         return_date: formattedReturnDate,
@@ -55,18 +66,6 @@ const BorrowRequest = ({ bookId, onSuccess, onCancel }) => {
         err.response?.data?.detail ||
           "Có lỗi xảy ra khi gửi yêu cầu mượn sách. Vui lòng thử lại sau."
       );
-
-      // If the error is because of existing pending request, cancel the form
-      if (
-        err.response?.data?.detail ===
-        "Bạn đã có một yêu cầu mượn sách này đang chờ xử lý."
-      ) {
-        setTimeout(() => {
-          if (onCancel) {
-            onCancel();
-          }
-        }, 3000);
-      }
     }
   };
 
