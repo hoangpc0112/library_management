@@ -39,10 +39,10 @@ function BookList({ apiEndpoint = "book" }) {
           };
         }
 
-        let url = `${API_URL}/${apiEndpoint}/`;
+        let url = `${API_URL}/${apiEndpoint}`;
 
         if (apiEndpoint === "book") {
-          url += `?page=${currentPage}&search=${search}`;
+          url += `/?page=${currentPage}&search=${search}`;
         }
 
         const response = await axios.get(url, config);
