@@ -114,8 +114,8 @@ function Header() {
                 </ul>
               </div>
             ) : (
-              <Link className="nav-link btn btn-outline-primary" to="/login">
-                <i className="fas fa-sign-in-alt me-1"></i> Đăng nhập
+              <Link className="nav-link" to="/login">
+                <i className="fas fa-envelope me-1"></i> Đăng nhập
               </Link>
             )}
           </div>
