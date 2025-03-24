@@ -15,8 +15,9 @@ const Statistics = () => {
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
-    fetchStats();
     document.title = "Thống kê thư viện";
+    window.scrollTo(0, 0);
+    fetchStats();
   }, []);
 
   const fetchStats = async () => {

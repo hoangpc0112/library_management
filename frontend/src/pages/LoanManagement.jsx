@@ -8,8 +8,9 @@ const LoanManagement = () => {
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
-    fetchLoans();
     document.title = "Quản lý mượn/trả";
+    window.scrollTo(0, 0);
+    fetchLoans();
   }, []);
 
   const fetchLoans = async () => {
