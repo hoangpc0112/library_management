@@ -3,9 +3,8 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  height: 50vh;
+  height: 36vh;
   position: relative;
-  color: white;
 }
 
 .bg-custom::before {
@@ -15,7 +14,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   z-index: 1;
 }
 

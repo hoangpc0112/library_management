@@ -16,6 +16,10 @@ const EditBookForm = ({ book, onCancel, onSuccess }) => {
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     if (book) {
       setFormData({
         title: book.title || "",

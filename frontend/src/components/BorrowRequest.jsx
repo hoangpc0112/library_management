@@ -16,6 +16,10 @@ const BorrowRequest = ({ bookId, onSuccess, onCancel }) => {
   );
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -87,7 +91,7 @@ const BorrowRequest = ({ bookId, onSuccess, onCancel }) => {
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label htmlFor="borrowDate" className="form-label">
-              Ngày mượn
+              Ngày mượn (trong giờ hành chính)
             </label>
             <input
               type="date"

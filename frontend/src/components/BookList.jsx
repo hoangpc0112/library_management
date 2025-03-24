@@ -46,7 +46,6 @@ function BookList({ apiEndpoint = "book" }) {
         }
 
         const response = await axios.get(url, config);
-        console.log("API Response:", response.data);
 
         if (apiEndpoint === "book") {
           setBooks(response.data.books || []);

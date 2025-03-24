@@ -39,11 +39,11 @@ const AboutUsPage = () => {
             <div className="col-12 col-lg-6 col-xxl-6">
               <div className="row justify-content-lg-end">
                 <div className="col-12 col-lg-11">
-                  <div className="about-wrapper">
+                  <div className="about-wrapper text-center text-lg-start">
                     <p className="lead mb-4 mb-md-5">
-                      Với không gian hiện đại và hệ thống tài nguyên phong phú,
-                      thư viện PTIT là nơi lý tưởng để sinh viên tiếp cận kiến
-                      thức, mở rộng tư duy và thực hiện các dự án nghiên cứu.
+                      Với không gian và hệ thống tài nguyên phong phú, thư viện
+                      PTIT là nơi lý tưởng để sinh viên tiếp cận kiến thức, mở
+                      rộng tư duy và thực hiện các dự án nghiên cứu.
                     </p>
                     <div className="row gy-4 mb-4 mb-md-5">
                       <div className="col-12 col-md-6">

@@ -130,10 +130,10 @@ const Carousel = ({ title, endpoint }) => {
             swiper.navigation.update();
           }}
           breakpoints={{
-            320: { slidesPerView: 1, spaceBetween: 10 },
-            576: { slidesPerView: 2, spaceBetween: 15 },
-            768: { slidesPerView: 3, spaceBetween: 15 },
-            992: { slidesPerView: 4, spaceBetween: 20 },
+            320: { slidesPerView: 2, spaceBetween: 10 },
+            576: { slidesPerView: 3, spaceBetween: 15 },
+            768: { slidesPerView: 4, spaceBetween: 15 },
+            992: { slidesPerView: 5, spaceBetween: 20 },
             1200: { slidesPerView: 6, spaceBetween: 20 },
           }}
         >

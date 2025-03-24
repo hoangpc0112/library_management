@@ -18,7 +18,7 @@ function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="btn btn-outline-secondary border-0"
+      className="btn border-0"
       title={
         theme === "dark" ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"
       }

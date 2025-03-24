@@ -154,7 +154,7 @@ const BorrowedPage = () => {
           </Link>
         </div>
       ) : (
-        <div className="row row-cols-2 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 row-cols-xl-5 g-3">
+        <div className="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-5 row-cols-xl-5 g-3">
           {borrowedBooks.map((borrow) => {
             const book = books[borrow.book_id];
             if (!book) return null;
@@ -177,8 +177,8 @@ const BorrowedPage = () => {
                   </div>
                   <div className="card-body">
                     <h5 className="card-title" title={book.title}>
-                      {book.title.length > 40
-                        ? book.title.slice(0, 36) + "..."
+                      {book.title.length > 30
+                        ? book.title.slice(0, 26) + "..."
                         : book.title}
                     </h5>
                     <p className="card-text text-muted mb-1">{book.author}</p>
@@ -186,7 +186,7 @@ const BorrowedPage = () => {
                     <div className="mt-3">
                       {borrow.status === "approved" && (
                         <div className="d-flex justify-content-between align-items-center mb-2">
-                          <span>Thời gian còn lại:</span>
+                          <span>Còn lại:</span>
                           <span
                             className={`fw-bold ${
                               remainingDays < 0

@@ -42,83 +42,136 @@ const LoanManagement = () => {
       );
 
       setLoans(enrichedLoans);
-      setLoading(false);
+      setError("");
     } catch (err) {
       setError(
         "Không thể tải danh sách sách đang mượn: " +
           (err.message || "Lỗi không xác định")
       );
+    } finally {
       setLoading(false);
     }
   };
 
   const handleReturn = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.put(
-        `${API_URL}/borrow/${id}/return`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    if (window.confirm("Bạn có chắc muốn xác nhận trả sách này?")) {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.put(
+          `${API_URL}/borrow/${id}/return`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-      if (response.data.status === "returned") {
-        fetchLoans();
+        if (response.data.status === "returned") {
+          fetchLoans();
+          setError("");
+        }
+      } catch (err) {
+        setError(
+          "Không thể cập nhật trạng thái trả sách: " +
+            (err.response?.data?.detail || err.message)
+        );
       }
-    } catch (err) {
-      setError(
-        "Không thể cập nhật trạng thái trả sách: " +
-          (err.response?.data?.detail || err.message)
-      );
     }
   };
 
-  return (
-    <div className="container mt-4">
-      <h2 className="mb-4">Quản lý mượn/trả</h2>
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("vi-VN");
+  };
 
-      {error && <div className="alert alert-danger">{error}</div>}
+  return (
+    <div className="container-fluid py-4 px-3 px-md-4">
+      <h2 className="mb-4 fw-bold text-center">Quản lý mượn/trả</h2>
+
+      {error && (
+        <div
+          className="alert alert-danger alert-dismissible fade show mx-auto"
+          style={{ maxWidth: "800px" }}
+        >
+          {error}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError("")}
+          ></button>
+        </div>
+      )}
 
       {loading ? (
         <div
-          className="container text-center py-5"
-          style={{ minHeight: "100vh" }}
+          className="d-flex justify-content-center align-items-center"
+          style={{ minHeight: "50vh" }}
         >
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Đang tải...</span>
           </div>
         </div>
+      ) : loans.length === 0 ? (
+        <p className="text-center text-muted py-5">
+          Không có sách nào đang mượn.
+        </p>
       ) : (
-        <table className="table table-bordered table-striped">
-          <thead>
-            <tr>
-              <th>STT</th>
-              <th>Người mượn</th>
-              <th>Sách</th>
-              <th>Ngày mượn</th>
-              <th>Ngày trả dự kiến</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loans.map((loan, index) => (
-              <tr key={loan.id}>
-                <td>{index + 1}</td>
-                <td>{loan.user.full_name}</td>
-                <td>{loan.book.title}</td>
-                <td>{new Date(loan.borrow_date).toLocaleDateString()}</td>
-                <td>{new Date(loan.return_date).toLocaleDateString()}</td>
-                <td>
-                  <button
-                    className="btn btn-sm btn-primary"
-                    onClick={() => handleReturn(loan.id)}
-                  >
-                    Xác nhận trả
-                  </button>
-                </td>
+        <div className="table-responsive">
+          <table className="table table-striped table-bordered table-hover align-middle">
+            <thead className="table-dark">
+              <tr>
+                <th scope="col" className="text-nowrap">
+                  STT
+                </th>
+                <th scope="col" className="text-nowrap">
+                  Người mượn
+                </th>
+                <th scope="col" className="text-nowrap">
+                  Sách
+                </th>
+                <th scope="col" className="text-nowrap">
+                  Ngày mượn
+                </th>
+                <th scope="col" className="text-nowrap">
+                  Ngày trả dự kiến
+                </th>
+                <th scope="col" className="text-nowrap">
+                  Hành động
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {loans.map((loan, index) => (
+                <tr key={loan.id}>
+                  <td className="text-nowrap">{index + 1}</td>
+                  <td
+                    className="text-nowrap text-truncate"
+                    style={{ maxWidth: "150px" }}
+                  >
+                    {loan.user?.full_name || "N/A"}
+                  </td>
+                  <td
+                    className="text-nowrap text-truncate"
+                    style={{ maxWidth: "200px" }}
+                    title={loan.book?.title}
+                  >
+                    {loan.book?.title || "N/A"}
+                  </td>
+                  <td className="text-nowrap">
+                    {formatDate(loan.borrow_date)}
+                  </td>
+                  <td className="text-nowrap">
+                    {formatDate(loan.return_date)}
+                  </td>
+                  <td className="text-nowrap">
+                    <button
+                      className="btn btn-primary btn-sm w-100"
+                      onClick={() => handleReturn(loan.id)}
+                    >
+                      Xác nhận trả
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

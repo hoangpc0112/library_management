@@ -21,40 +21,45 @@ const HomePage = () => {
             className="d-block mx-auto mb-4"
             src="https://cdn-icons-png.flaticon.com/512/5402/5402751.png"
             alt="Book icon"
-            width="72"
-            height="57"
+            width="80px"
+            height="80px"
           />
-          <h1 className="display-5 fw-bold">Chào mừng đến với Thư viện PTIT</h1>
-          <div className="col-lg-6 mx-auto">
-            <p className="lead">
-              Thư viện của Học viện Công nghệ Bưu chính Viễn thông (PTIT) là một
-              trung tâm thông tin và tài liệu quan trọng, phục vụ nhu cầu học
-              tập, nghiên cứu và giảng dạy của sinh viên, giảng viên và cán bộ
-              của Học viện. Thư viện cung cấp một kho tài liệu phong phú, bao
-              gồm sách, tạp chí, luận văn, và các tài liệu điện tử. Ngoài ra,
-              thư viện còn có các dịch vụ hỗ trợ như tra cứu tài liệu trực
-              tuyến, mượn tài liệu, và không gian học tập hiện đại.
-            </p>
-          </div>
+          <h1 className="display-5 fw-bold">PTIT Library</h1>
+          <p className="col-lg-6 col-md-5 mx-auto fs-5">
+            Hệ thống thư viện trực tuyến của Học viện Công nghệ Bưu chính Viễn
+            thông
+          </p>
         </div>
       </div>
+
       <SearchInput />
-      <Carousel
-        title="Được yêu thích hàng đầu"
-        endpoint={`${API_URL}/book/?page=1&size=10&sort=average_rating&order=desc`}
-      />
-      <hr className="container border-2" />
-      <Carousel
-        title="Đang thịnh hành"
-        endpoint={`${API_URL}/recommendation/trending`}
-      />
-      <hr className="container border-2" />
-      <h2 className="container mb-4">Gợi ý cho bạn</h2>
-      {token ? (
-        <BookList apiEndpoint="recommendation/user" />
-      ) : (
-        <BookList apiEndpoint="book" />
-      )}
+
+      <section className="container my-5">
+        <Carousel
+          title="Được yêu thích hàng đầu"
+          endpoint={`${API_URL}/book/?page=1&size=10&sort=average_rating&order=desc`}
+        />
+      </section>
+
+      <hr className="container border-2 my-5" />
+
+      <section className="container my-5">
+        <Carousel
+          title="Đang thịnh hành"
+          endpoint={`${API_URL}/recommendation/trending`}
+        />
+      </section>
+
+      <hr className="container border-2 my-5" />
+
+      <section className="container my-5">
+        <h2 className="mb-4 text-center text-md-start">Gợi ý cho bạn</h2>
+        {token ? (
+          <BookList apiEndpoint="recommendation/user" />
+        ) : (
+          <BookList apiEndpoint="book" />
+        )}
+      </section>
     </div>
   );
 };

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css";
 
 const AdminBorrowRequest = () => {
   const [borrowRequests, setBorrowRequests] = useState([]);
@@ -68,8 +67,7 @@ const AdminBorrowRequest = () => {
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("vi-VN");
+    return new Date(dateString).toLocaleDateString("vi-VN");
   };
 
   const formatDateTime = (dateTimeString) => {
@@ -82,12 +80,13 @@ const AdminBorrowRequest = () => {
   };
 
   return (
-    <div className="container mt-4">
-      <h1 className="mb-4 text-center">Quản lý yêu cầu mượn sách</h1>
+    <div className="container container-fluid py-4 px-3 px-md-4">
+      <h1 className="mb-4 text-center fw-bold">Quản lý yêu cầu mượn sách</h1>
+
       {message && (
         <div
-          className="alert alert-success alert-dismissible fade show"
-          role="alert"
+          className="alert alert-success alert-dismissible fade show mx-auto"
+          style={{ maxWidth: "800px" }}
         >
           {message}
           <button
@@ -99,8 +98,8 @@ const AdminBorrowRequest = () => {
       )}
       {error && (
         <div
-          className="alert alert-danger alert-dismissible fade show"
-          role="alert"
+          className="alert alert-danger alert-dismissible fade show mx-auto"
+          style={{ maxWidth: "800px" }}
         >
           {error}
           <button
@@ -113,63 +112,90 @@ const AdminBorrowRequest = () => {
 
       {loading ? (
         <div
-          className="container text-center py-5"
-          style={{ minHeight: "100vh" }}
+          className="d-flex justify-content-center align-items-center"
+          style={{ minHeight: "50vh" }}
         >
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Đang tải...</span>
           </div>
         </div>
       ) : borrowRequests.length === 0 ? (
-        <p className="text-center">Không có yêu cầu nào.</p>
+        <p className="text-center text-muted py-5">Không có yêu cầu nào.</p>
       ) : (
-        <table className="table table-striped table-bordered">
-          <thead className="table-dark">
-            <tr>
-              <th>Mã SV</th>
-              <th>Tên người mượn</th>
-              <th className="text-truncate" style={{ maxWidth: "200px" }}>
-                Tên sách
-              </th>
-              <th>Ngày tạo</th>
-              <th>Ngày mượn</th>
-              <th>Ngày trả</th>
-              <th>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {borrowRequests.map((request) => (
-              <tr key={request.id}>
-                <td>{request.user.msv || "N/A"}</td>
-                <td>{request.user.full_name || "N/A"}</td>
-                <td
-                  className="text-truncate"
-                  style={{ maxWidth: "200px" }}
-                  title={request.book.title}
-                >
-                  {request.book.title || "N/A"}
-                </td>
-                <td>{formatDateTime(request.created_at)}</td>
-                <td>{formatDate(request.borrow_date)}</td>
-                <td>{formatDate(request.return_date)}</td>
-                <td>
-                  <button
-                    className="btn btn-success btn-sm me-2"
-                    onClick={() => handleAction(request.id, "approve")}
-                  >
-                    Chấp thuận
-                  </button>
-                  <button
-                    className="btn btn-danger btn-sm"
-                    onClick={() => handleAction(request.id, "reject")}
-                  >
-                    Từ chối
-                  </button>
-                </td>
+        <div className="table-responsive">
+          <table className="table table-striped table-bordered table-hover align-middle">
+            <thead className="table-dark">
+              <tr>
+                <th scope="col" className="text-nowrap">
+                  Mã SV
+                </th>
+                <th scope="col" className="text-nowrap">
+                  Tên người mượn
+                </th>
+                <th scope="col" className="text-nowrap">
+                  Tên sách
+                </th>
+                <th scope="col" className="text-nowrap">
+                  Ngày tạo
+                </th>
+                <th scope="col" className="text-nowrap">
+                  Ngày mượn
+                </th>
+                <th scope="col" className="text-nowrap">
+                  Ngày trả
+                </th>
+                <th scope="col" className="text-nowrap">
+                  Thao tác
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {borrowRequests.map((request) => (
+                <tr key={request.id}>
+                  <td className="text-nowrap">{request.user.msv || "N/A"}</td>
+                  <td
+                    className="text-nowrap text-truncate"
+                    style={{ maxWidth: "150px" }}
+                  >
+                    {request.user.full_name || "N/A"}
+                  </td>
+                  <td
+                    className="text-nowrap text-truncate"
+                    style={{ maxWidth: "200px" }}
+                    title={request.book.title}
+                  >
+                    {request.book.title || "N/A"}
+                  </td>
+                  <td className="text-nowrap">
+                    {formatDateTime(request.created_at)}
+                  </td>
+                  <td className="text-nowrap">
+                    {formatDate(request.borrow_date)}
+                  </td>
+                  <td className="text-nowrap">
+                    {formatDate(request.return_date)}
+                  </td>
+                  <td className="text-nowrap">
+                    <div className="d-flex gap-2 flex-column flex-sm-row">
+                      <button
+                        className="btn btn-success btn-sm w-100"
+                        onClick={() => handleAction(request.id, "approve")}
+                      >
+                        Chấp thuận
+                      </button>
+                      <button
+                        className="btn btn-danger btn-sm w-100"
+                        onClick={() => handleAction(request.id, "reject")}
+                      >
+                        Từ chối
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
