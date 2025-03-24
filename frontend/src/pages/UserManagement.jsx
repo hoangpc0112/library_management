@@ -98,7 +98,7 @@ const UserManagement = () => {
       ) : (
         <div className="table-responsive">
           <table className="table table-striped table-bordered table-hover align-middle">
-            <thead className="table-dark">
+            <thead>
               <tr>
                 <th scope="col" className="text-nowrap">
                   STT

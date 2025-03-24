@@ -82,7 +82,7 @@ const LoanManagement = () => {
   };
 
   return (
-    <div className="container-fluid py-4 px-3 px-md-4">
+    <div className="container container-fluid py-4 px-3 px-md-4">
       <h2 className="mb-4 fw-bold text-center">Quản lý mượn/trả</h2>
 
       {error && (
@@ -115,7 +115,7 @@ const LoanManagement = () => {
       ) : (
         <div className="table-responsive">
           <table className="table table-striped table-bordered table-hover align-middle">
-            <thead className="table-dark">
+            <thead>
               <tr>
                 <th scope="col" className="text-nowrap">
                   STT

@@ -24,8 +24,8 @@ const HomePage = () => {
             width="80px"
             height="80px"
           />
-          <h1 className="display-5 fw-bold">PTIT Library</h1>
-          <p className="col-lg-6 col-md-5 mx-auto fs-5 p-2">
+          <h1 className="display-5 fw-bold text-white">PTIT Library</h1>
+          <p className="col-lg-6 col-md-5 mx-auto fs-5 p-2 text-white">
             Hệ thống thư viện trực tuyến của Học viện Công nghệ Bưu chính Viễn
             thông
           </p>
