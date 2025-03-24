@@ -290,7 +290,7 @@ const SingleBook = () => {
             </div>
             <hr className="container border-2 mt-5" />
             <Carousel
-              title="Những cuốn sách khác bạn có thể thích"
+              title="Có thể bạn cũng thích"
               endpoint={`${API_URL}/recommendation/${id}`}
             />
           </div>

@@ -4,7 +4,7 @@ import logo from "../assets/images/logo.png";
 import { useAuth } from "../contexts/AuthContext";
 
 function Header() {
-  const { currentUser, isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -42,42 +42,41 @@ function Header() {
 
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto mb-2 mb-md-0">
-            <li className="nav-item">
-              <Link className="nav-link ms-1" to="/">
+            <li className="nav-item ms-md-4">
+              <Link className="nav-link" to="/">
                 Trang chủ
               </Link>
             </li>
-            <li className="nav-item">
-              <Link className="nav-link ms-1" to="/book">
+            <li className="nav-item ms-md-4">
+              <Link className="nav-link" to="/book">
                 Thư viện sách
               </Link>
             </li>
-            <li className="nav-item">
-              <Link className="nav-link ms-1" to="/borrowed">
+            <li className="nav-item ms-md-4">
+              <Link className="nav-link" to="/borrowed">
                 Sách đã mượn
               </Link>
             </li>
-            <li className="nav-item">
-              <Link className="nav-link ms-1" to="/about-us">
+            <li className="nav-item ms-md-4">
+              <Link className="nav-link" to="/about-us">
                 Về chúng tôi
               </Link>
             </li>
           </ul>
 
-          <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center justify-content-between gap-4">
             <ThemeToggle />
 
             {isAuthenticated ? (
               <div className="dropdown">
                 <a
                   href="#"
-                  className="d-flex align-items-center link-body-emphasis text-decoration-none dropdown-toggle"
+                  className="d-flex align-items-center"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
                 >
                   <img
                     src={
-                      currentUser?.avatar ||
                       "https://i.pinimg.com/736x/21/91/6e/21916e491ef0d796398f5724c313bbe7.jpg"
                     }
                     alt="Avatar"
@@ -85,7 +84,6 @@ function Header() {
                     height="32"
                     className="rounded-circle me-2"
                   />
-                  {currentUser?.msv || "User"}
                 </a>
                 <ul className="dropdown-menu dropdown-menu-end text-small shadow">
                   <li>
@@ -93,7 +91,7 @@ function Header() {
                       Hồ sơ
                     </Link>
                   </li>
-                  {currentUser?.is_admin && (
+                  {isAdmin() && (
                     <li>
                       <Link className="dropdown-item" to="/admin">
                         Quản trị
