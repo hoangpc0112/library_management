@@ -43,23 +43,23 @@ function Header() {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto mb-2 mb-md-0">
             <li className="nav-item">
-              <Link className="nav-link" to="/">
-                <i className="fas fa-home me-1"></i> Trang chủ
+              <Link className="nav-link ms-1" to="/">
+                Trang chủ
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/book">
-                <i className="fas fa-book me-1"></i> Thư viện sách
+              <Link className="nav-link ms-1" to="/book">
+                Thư viện sách
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/borrowed">
-                <i className="fas fa-book-reader me-1"></i> Sách đã mượn
+              <Link className="nav-link ms-1" to="/borrowed">
+                Sách đã mượn
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/about-us">
-                <i className="fas fa-envelope me-1"></i> Về chúng tôi
+              <Link className="nav-link ms-1" to="/about-us">
+                Về chúng tôi
               </Link>
             </li>
           </ul>
@@ -115,7 +115,7 @@ function Header() {
               </div>
             ) : (
               <Link className="nav-link" to="/login">
-                <i className="fas fa-envelope me-1"></i> Đăng nhập
+                Đăng nhập
               </Link>
             )}
           </div>
