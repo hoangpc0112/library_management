@@ -21,8 +21,8 @@ const HomePage = () => {
             className="d-block mx-auto mb-4"
             src="https://cdn-icons-png.flaticon.com/512/5402/5402751.png"
             alt="Book icon"
-            width="80px"
-            height="80px"
+            width="75px"
+            height="75px"
           />
           <h1 className="display-5 fw-bold text-white">PTIT Library</h1>
           <p className="col-lg-6 col-md-5 mx-auto fs-5 p-2 text-white">
