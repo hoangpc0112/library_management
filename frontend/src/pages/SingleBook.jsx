@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
@@ -19,11 +19,18 @@ const SingleBook = () => {
   const [borrowStatus, setBorrowStatus] = useState(null);
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
+  // Create a memoized axios instance
+  const createAxiosInstance = useCallback(() => {
+    const token = localStorage.getItem("token");
+    return token
+      ? axios.create({
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      : null;
   }, []);
 
-  const fetchBook = async () => {
+  // Optimize book fetching
+  const fetchBook = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_URL}/book/${id}`);
@@ -35,141 +42,123 @@ const SingleBook = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL, id]);
 
-  const checkBorrowStatus = async () => {
+  // Optimize borrow status checking
+  const checkBorrowStatus = useCallback(async () => {
     if (!currentUser) return;
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
+      const axiosInstance = createAxiosInstance();
+      if (!axiosInstance) return;
 
-      const axiosInstance = axios.create({
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axiosInstance.get(`${API_URL}/borrow/all`);
+      const allRequests = response.data;
 
-      const checkBookBorrowStatus = async (bookId, currentUser) => {
-        try {
-          const response = await axiosInstance.get(`${API_URL}/borrow/all`);
-          const allRequests = response.data;
+      const userBookRequests = allRequests.filter(
+        (request) =>
+          request.book_id === parseInt(id) && request.user_id === currentUser.id
+      );
 
-          const userBookRequests = allRequests.filter(
-            (request) =>
-              request.book_id === parseInt(bookId) &&
-              request.user_id === currentUser.id
-          );
+      const pendingRequest = userBookRequests.find(
+        (request) => request.status === "pending"
+      );
+      const approvedRequest = userBookRequests.find(
+        (request) => request.status === "approved"
+      );
 
-          const pendingRequest = userBookRequests.find(
-            (request) => request.status === "pending"
-          );
-          const approvedRequest = userBookRequests.find(
-            (request) => request.status === "approved"
-          );
+      const isBookBorrowedByOthers = allRequests.some(
+        (request) =>
+          request.book_id === parseInt(id) &&
+          request.status === "approved" &&
+          request.user_id !== currentUser.id &&
+          ((request.actual_return_date === null &&
+            new Date(request.return_date) > new Date()) ||
+            (request.actual_return_date !== null &&
+              new Date(request.actual_return_date) > new Date()))
+      );
 
-          const isBookBorrowedByOthers = allRequests.some(
-            (request) =>
-              request.book_id === parseInt(bookId) &&
-              request.status === "approved" &&
-              request.user_id !== currentUser.id &&
-              ((request.actual_return_date === null &&
-                new Date(request.return_date) > new Date()) ||
-                (request.actual_return_date !== null &&
-                  new Date(request.actual_return_date) > new Date()))
-          );
-
-          if (pendingRequest) {
-            return "pending";
-          }
-
-          if (approvedRequest) {
-            return "approved";
-          }
-
-          if (isBookBorrowedByOthers) {
-            return "unavailable";
-          }
-
-          return null;
-        } catch (error) {
-          console.error("Lỗi khi kiểm tra trạng thái mượn sách:", error);
-          return null;
-        }
-      };
-
-      setBorrowStatus(await checkBookBorrowStatus(id, currentUser));
-    } catch (err) {
-      console.error("Lỗi khi kiểm tra trạng thái mượn sách:", err);
+      if (pendingRequest) return "pending";
+      if (approvedRequest) return "approved";
+      if (isBookBorrowedByOthers) return "unavailable";
+      return null;
+    } catch (error) {
+      console.error("Lỗi khi kiểm tra trạng thái mượn sách:", error);
+      return null;
     }
-  };
+  }, [API_URL, currentUser, id]);
 
+  // Scroll to top on component mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Fetch book data
   useEffect(() => {
     fetchBook();
-  }, [id]);
+  }, [fetchBook]);
 
+  // Check borrow status
   useEffect(() => {
     if (currentUser) {
-      checkBorrowStatus();
+      checkBorrowStatus().then(setBorrowStatus);
     }
-  }, [currentUser, id]);
+  }, [currentUser, checkBorrowStatus]);
 
+  // Update document title
   useEffect(() => {
-    if (book?.title) {
-      document.title = book.title;
-    } else {
-      document.title = "Loading...";
-    }
+    document.title = book?.title || "Loading...";
   }, [book?.title]);
 
-  const handleDelete = async () => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa sách này không?")) {
-      try {
-        setDeleteLoading(true);
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("Không tìm thấy token xác thực");
-        }
+  // Memoize book description
+  const bookDescription = useMemo(() => {
+    if (!book) return null;
+    return `${book.title} là một cuốn sách dài ${book.num_pages} trang được xuất bản bởi ${book.publisher} vào năm ${book.published_year}. Nó được viết bởi ${book.author} và đã nhận được đánh giá trung bình là ${book.average_rating}/5 từ ${book.ratings_count} độc giả.`;
+  }, [book]);
 
-        const axiosInstance = axios.create({
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+  // Handle book deletion
+  const handleDelete = useCallback(async () => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa sách này không?")) return;
 
-        await axiosInstance.delete(`${API_URL}/book/${id}`);
-        navigate(-1);
-      } catch (err) {
-        console.error("Lỗi khi xóa sách:", err);
-        alert(
-          err.response?.data?.detail ||
-            "Có lỗi xảy ra khi xóa sách. Vui lòng thử lại sau."
-        );
-        setDeleteLoading(false);
-      }
+    try {
+      setDeleteLoading(true);
+      const axiosInstance = createAxiosInstance();
+      if (!axiosInstance) throw new Error("Không tìm thấy token xác thực");
+
+      await axiosInstance.delete(`${API_URL}/book/${id}`);
+      navigate(-1);
+    } catch (err) {
+      console.error("Lỗi khi xóa sách:", err);
+      alert(
+        err.response?.data?.detail ||
+          "Có lỗi xảy ra khi xóa sách. Vui lòng thử lại sau."
+      );
+      setDeleteLoading(false);
     }
-  };
+  }, [API_URL, id, navigate, createAxiosInstance]);
 
-  const handleEditSuccess = () => {
+  // Event handlers
+  const handleEditSuccess = useCallback(() => {
     setIsEditing(false);
     fetchBook();
-  };
+  }, [fetchBook]);
 
-  const handleBorrow = () => {
+  const handleBorrow = useCallback(() => {
     if (!currentUser) {
       navigate("/login", { state: { from: `/book/${id}` } });
       return;
     }
     setIsBorrowing(true);
-  };
+  }, [currentUser, navigate, id]);
 
-  const handleBorrowSuccess = () => {
+  const handleBorrowSuccess = useCallback(() => {
     setIsBorrowing(false);
     setBorrowStatus("pending");
     alert("Yêu cầu mượn sách đã được gửi thành công! Chờ quản lý phê duyệt.");
-  };
+  }, []);
 
-  if (loading)
+  // Render loading state
+  if (loading) {
     return (
       <div
         className="d-flex justify-content-center align-items-center"
@@ -180,8 +169,10 @@ const SingleBook = () => {
         </div>
       </div>
     );
+  }
 
-  if (error)
+  // Render error state
+  if (error) {
     return (
       <div className="container my-5">
         <div className="alert alert-danger p-4 shadow-sm">
@@ -193,7 +184,9 @@ const SingleBook = () => {
         </div>
       </div>
     );
+  }
 
+  // Render edit mode
   if (isEditing) {
     return (
       <div className="container my-4">
@@ -206,6 +199,7 @@ const SingleBook = () => {
     );
   }
 
+  // Render borrow mode
   if (isBorrowing) {
     return (
       <div className="container my-4">
@@ -218,6 +212,7 @@ const SingleBook = () => {
     );
   }
 
+  // Render book details
   return (
     <div className="container my-4">
       <div className="card border-0 shadow-sm">
@@ -234,13 +229,14 @@ const SingleBook = () => {
                     width: "100%",
                     objectFit: "cover",
                   }}
+                  loading="lazy"
                 />
               </div>
             </div>
 
             <div className="col-lg-8 col-md-7">
               <h1 className="h2 fw-bold mb-1">{book.title}</h1>
-              <p className="text-primary mb-2 h5"> {book.author}</p>
+              <p className="text-primary mb-2 h5">{book.author}</p>
               <hr />
               <div className="row">
                 <div className="col-md-6">
@@ -262,13 +258,7 @@ const SingleBook = () => {
                 </div>
               </div>
               <hr className="mt-0" />
-              <p className="mb-2">
-                <strong>{book.title}</strong> là một cuốn sách dài{" "}
-                {book.num_pages} trang được xuất bản bởi {book.publisher} vào
-                năm {book.published_year}. Nó được viết bởi {book.author} và đã
-                nhận được đánh giá trung bình là {book.average_rating}/5 từ{" "}
-                {book.ratings_count} độc giả.
-              </p>
+              <p className="mb-2">{bookDescription}</p>
               <p>
                 Cuốn sách này hoàn hảo cho những độc giả yêu thích các tác phẩm
                 của {book.author} và đang tìm kiếm một cuốn sách chất lượng được
@@ -298,15 +288,15 @@ const SingleBook = () => {
                     Mượn sách
                   </button>
                 )}
-                {book.gg_drive_link ? (
+                {book.gg_drive_link && (
                   <button
                     className="btn btn-secondary flex-grow-1"
                     onClick={() => window.open(book.gg_drive_link, "_blank")}
                   >
                     Xem trước
                   </button>
-                ) : null}
-                {isAdmin() ? (
+                )}
+                {isAdmin() && (
                   <>
                     <button
                       className="btn btn-warning flex-grow-1"
@@ -322,7 +312,7 @@ const SingleBook = () => {
                       {deleteLoading ? "Đang xóa..." : "Xóa sách"}
                     </button>
                   </>
-                ) : null}
+                )}
               </div>
             </div>
             <hr className="container border-2 mt-5" />
@@ -337,4 +327,4 @@ const SingleBook = () => {
   );
 };
 
-export default SingleBook;
+export default React.memo(SingleBook);
