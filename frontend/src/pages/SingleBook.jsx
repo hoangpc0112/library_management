@@ -50,25 +50,55 @@ const SingleBook = () => {
         },
       });
 
-      const response = await axiosInstance.get(`${API_URL}/borrow/`);
-      const userRequests = response.data.filter(
-        (request) => request.book_id === parseInt(id)
-      );
+      const checkBookBorrowStatus = async (bookId, currentUser) => {
+        try {
+          const response = await axiosInstance.get(`${API_URL}/borrow/all`);
+          const allRequests = response.data;
 
-      const pendingRequest = userRequests.find(
-        (request) => request.status === "pending"
-      );
-      const approvedRequest = userRequests.find(
-        (request) => request.status === "approved"
-      );
+          const userBookRequests = allRequests.filter(
+            (request) =>
+              request.book_id === parseInt(bookId) &&
+              request.user_id === currentUser.id
+          );
 
-      if (pendingRequest) {
-        setBorrowStatus("pending");
-      } else if (approvedRequest) {
-        setBorrowStatus("approved");
-      } else {
-        setBorrowStatus(null);
-      }
+          const pendingRequest = userBookRequests.find(
+            (request) => request.status === "pending"
+          );
+          const approvedRequest = userBookRequests.find(
+            (request) => request.status === "approved"
+          );
+
+          const isBookBorrowedByOthers = allRequests.some(
+            (request) =>
+              request.book_id === parseInt(bookId) &&
+              request.status === "approved" &&
+              request.user_id !== currentUser.id &&
+              ((request.actual_return_date === null &&
+                new Date(request.return_date) > new Date()) ||
+                (request.actual_return_date !== null &&
+                  new Date(request.actual_return_date) > new Date()))
+          );
+
+          if (pendingRequest) {
+            return "pending";
+          }
+
+          if (approvedRequest) {
+            return "approved";
+          }
+
+          if (isBookBorrowedByOthers) {
+            return "unavailable";
+          }
+
+          return null;
+        } catch (error) {
+          console.error("Lỗi khi kiểm tra trạng thái mượn sách:", error);
+          return null;
+        }
+      };
+
+      setBorrowStatus(await checkBookBorrowStatus(id, currentUser));
     } catch (err) {
       console.error("Lỗi khi kiểm tra trạng thái mượn sách:", err);
     }
@@ -252,6 +282,13 @@ const SingleBook = () => {
                 ) : borrowStatus === "approved" ? (
                   <button className="btn btn-success flex-grow-1" disabled>
                     Bạn đang mượn cuốn sách này
+                  </button>
+                ) : borrowStatus === "unavailable" ? (
+                  <button
+                    onClick={handleBorrow}
+                    className="btn btn-secondary flex-grow-1 disabled"
+                  >
+                    Sách đang được mượn bởi người khác
                   </button>
                 ) : (
                   <button
