@@ -1,25 +1,51 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const BorrowedPage = () => {
   const [borrowedBooks, setBorrowedBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [books, setBooks] = useState({});
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+  const fetchBorrowedBooks = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Bạn cần đăng nhập để xem sách đang mượn");
+      }
+
+      const axiosInstance = axios.create({
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const response = await axiosInstance.get(`${API_URL}/borrow/`);
+      setBorrowedBooks(response.data);
+      setError(null);
+    } catch (err) {
+      console.error("Lỗi khi lấy thông tin sách đang mượn:", err);
+      setError(
+        err.response?.data?.detail ||
+          err.message ||
+          "Có lỗi xảy ra khi lấy thông tin sách đang mượn. Vui lòng thử lại sau."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     document.title = "Sách đang mượn";
     fetchBorrowedBooks();
-  }, []);
+  }, [fetchBorrowedBooks]);
 
   const calculateRemainingDays = useCallback((returnDate) => {
     if (!returnDate) return "N/A";
-
     const today = new Date();
     const returnDay = new Date(returnDate);
-    const timeDifference = returnDay.getTime() - today.getTime();
+    const timeDifference = returnDay - today;
     return Math.ceil(timeDifference / (1000 * 3600 * 24));
   }, []);
 
@@ -41,7 +67,6 @@ const BorrowedPage = () => {
       rejected: <span className="badge bg-danger">Đã từ chối</span>,
       returned: <span className="badge bg-secondary">Đã trả</span>,
     };
-
     return (
       statusMap[status] || (
         <span className="badge bg-light text-dark">Không xác định</span>
@@ -49,54 +74,13 @@ const BorrowedPage = () => {
     );
   }, []);
 
-  const fetchBorrowedBooks = useCallback(async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("Bạn cần đăng nhập để xem sách đang mượn");
-      }
-
-      const axiosInstance = axios.create({
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const borrowsResponse = await axiosInstance.get(`${API_URL}/borrow/`);
-
-      const bookPromises = borrowsResponse.data.map((borrow) =>
-        axiosInstance.get(`${API_URL}/book/${borrow.book_id}`)
-      );
-
-      const bookResponses = await Promise.all(bookPromises);
-      const bookData = bookResponses.reduce((acc, response, index) => {
-        acc[borrowsResponse.data[index].book_id] = response.data;
-        return acc;
-      }, {});
-
-      setBooks(bookData);
-      setBorrowedBooks(borrowsResponse.data);
-      setError(null);
-    } catch (err) {
-      console.error("Lỗi khi lấy thông tin sách đang mượn:", err);
-      setError(
-        err.response?.data?.detail ||
-          err.message ||
-          "Có lỗi xảy ra khi lấy thông tin sách đang mượn. Vui lòng thử lại sau."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [API_URL]);
-
   const handleReturnBook = useCallback(
     async (borrowId) => {
       if (!window.confirm("Bạn có chắc chắn muốn trả sách này không?")) return;
 
       try {
         const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("Bạn cần đăng nhập để trả sách");
-        }
+        if (!token) throw new Error("Bạn cần đăng nhập để trả sách");
 
         const axiosInstance = axios.create({
           headers: { Authorization: `Bearer ${token}` },
@@ -113,12 +97,12 @@ const BorrowedPage = () => {
         );
       }
     },
-    [API_URL, fetchBorrowedBooks]
+    [fetchBorrowedBooks]
   );
 
   const bookCardRenderer = useMemo(() => {
     return borrowedBooks.map((borrow) => {
-      const book = books[borrow.book_id];
+      const book = borrow.book;
       if (!book) return null;
 
       const remainingDays = calculateRemainingDays(borrow.return_date);
@@ -149,7 +133,6 @@ const BorrowedPage = () => {
                   : book.title}
               </h6>
               <p className="card-text text-muted small mb-1">{book.author}</p>
-
               <div className="mt-1 small">
                 {borrow.status === "approved" && (
                   <div className="d-flex justify-content-between mb-1">
@@ -169,7 +152,6 @@ const BorrowedPage = () => {
                     </span>
                   </div>
                 )}
-
                 <div className="d-flex justify-content-between mb-1">
                   <span>Ngày mượn:</span>
                   <span>
@@ -178,7 +160,6 @@ const BorrowedPage = () => {
                     ).toLocaleDateString("vi-VN")}
                   </span>
                 </div>
-
                 {borrow.return_date && (
                   <div className="d-flex justify-content-between mb-1">
                     <span>Hạn trả:</span>
@@ -211,21 +192,31 @@ const BorrowedPage = () => {
         </div>
       );
     });
-  }, [
-    borrowedBooks,
-    books,
-    calculateRemainingDays,
-    getStatusBadge,
-    handleReturnBook,
-  ]);
+  }, [borrowedBooks, calculateRemainingDays, getStatusBadge, handleReturnBook]);
 
   if (loading) {
     return (
       <div className="container my-5">
-        <div className="d-flex justify-content-center">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Đang tải...</span>
-          </div>
+        <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6 g-3">
+          {[...Array(6)].map((_, index) => (
+            <div className="col" key={index}>
+              <div
+                className="card h-100 shadow-sm"
+                style={{ maxWidth: "200px" }}
+              >
+                <div
+                  className="card-img-top bg-light"
+                  style={{ height: "280px" }}
+                />
+                <div className="card-body p-2">
+                  <div className="placeholder-glow">
+                    <h6 className="card-title mb-1 placeholder col-8" />
+                    <p className="card-text text-muted small mb-1 placeholder col-6" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );

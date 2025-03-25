@@ -1,87 +1,75 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const LoanManagement = () => {
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+  const [error, setError] = useState(null);
+  const token = localStorage.getItem("token");
+
+  const fetchLoans = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API_URL}/borrow/active`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setLoans(response.data);
+      setError(null);
+    } catch (err) {
+      setError(
+        "Không thể tải danh sách sách đang mượn: " +
+          (err.response?.data?.detail || err.message || "Lỗi không xác định")
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
 
   useEffect(() => {
     document.title = "Quản lý mượn/trả";
     window.scrollTo(0, 0);
     fetchLoans();
-  }, []);
+  }, [fetchLoans]);
 
-  const fetchLoans = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/borrow/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const approvedLoans = response.data.filter(
-        (loan) => loan.status === "approved" && !loan.actual_return_date
-      );
-
-      const enrichedLoans = await Promise.all(
-        approvedLoans.map(async (loan) => {
-          const [userResponse, bookResponse] = await Promise.all([
-            axios.get(`${API_URL}/user/${loan.user_id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            axios.get(`${API_URL}/book/${loan.book_id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-          ]);
-          return {
-            ...loan,
-            user: userResponse.data,
-            book: bookResponse.data,
-          };
-        })
-      );
-
-      setLoans(enrichedLoans);
-      setError("");
-    } catch (err) {
-      setError(
-        "Không thể tải danh sách sách đang mượn: " +
-          (err.message || "Lỗi không xác định")
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleReturn = async (id) => {
-    if (window.confirm("Bạn có chắc muốn xác nhận trả sách này?")) {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.put(
-          `${API_URL}/borrow/${id}/return`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        if (response.data.status === "returned") {
-          fetchLoans();
-          setError("");
+  const handleReturn = useCallback(
+    async (id) => {
+      if (window.confirm("Bạn có chắc muốn xác nhận trả sách này?")) {
+        setLoading(true);
+        try {
+          const response = await axios.put(
+            `${API_URL}/borrow/${id}/return`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (response.data.status === "returned") {
+            fetchLoans();
+            setError(null);
+          }
+        } catch (err) {
+          setError(
+            "Không thể cập nhật trạng thái trả sách: " +
+              (err.response?.data?.detail ||
+                err.message ||
+                "Lỗi không xác định")
+          );
+        } finally {
+          setLoading(false);
         }
-      } catch (err) {
-        setError(
-          "Không thể cập nhật trạng thái trả sách: " +
-            (err.response?.data?.detail || err.message)
-        );
       }
-    }
-  };
+    },
+    [fetchLoans, token]
+  );
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("vi-VN");
+    return dateString
+      ? new Date(dateString).toLocaleDateString("vi-VN")
+      : "N/A";
   };
 
   const calculateRemainingTime = (returnDate) => {
+    if (!returnDate) return "N/A";
     const today = new Date();
     const dueDate = new Date(returnDate);
     const timeDiff = dueDate - today;
@@ -98,20 +86,20 @@ const LoanManagement = () => {
   };
 
   return (
-    <div className="container container-fluid py-4 px-3 px-md-4">
-      <h2 className="mb-4 fw-bold text-center">Quản lý mượn/trả</h2>
+    <div className="container py-5 px-3 px-md-4">
+      <h2 className="mb-5 text-center fw-bold">Quản lý mượn/trả</h2>
 
       {error && (
         <div
-          className="alert alert-danger alert-dismissible fade show mx-auto"
+          className="alert alert-danger alert-dismissible fade show mx-auto rounded-3"
           style={{ maxWidth: "800px" }}
         >
           {error}
           <button
             type="button"
             className="btn-close"
-            onClick={() => setError("")}
-          ></button>
+            onClick={() => setError(null)}
+          />
         </div>
       )}
 
@@ -133,59 +121,37 @@ const LoanManagement = () => {
           <table className="table table-striped table-bordered table-hover align-middle">
             <thead>
               <tr>
-                <th scope="col" className="text-nowrap">
-                  STT
-                </th>
-                <th scope="col" className="text-nowrap">
-                  Người mượn
-                </th>
-                <th scope="col" className="text-nowrap">
-                  Sách
-                </th>
-                <th scope="col" className="text-nowrap">
-                  Ngày mượn
-                </th>
-                <th scope="col" className="text-nowrap">
-                  Ngày trả dự kiến
-                </th>
-                <th scope="col" className="text-nowrap">
-                  Còn lại
-                </th>
-                <th scope="col" className="text-nowrap">
-                  Hành động
-                </th>
+                <th scope="col">STT</th>
+                <th scope="col">Người mượn</th>
+                <th scope="col">Sách</th>
+                <th scope="col">Ngày mượn</th>
+                <th scope="col">Ngày trả dự kiến</th>
+                <th scope="col">Còn lại</th>
+                <th scope="col">Hành động</th>
               </tr>
             </thead>
             <tbody>
               {loans.map((loan, index) => (
                 <tr key={loan.id}>
-                  <td className="text-nowrap">{index + 1}</td>
-                  <td
-                    className="text-nowrap text-truncate"
-                    style={{ maxWidth: "150px" }}
-                  >
+                  <td>{index + 1}</td>
+                  <td className="text-truncate" style={{ maxWidth: "150px" }}>
                     {loan.user?.full_name || "N/A"}
                   </td>
                   <td
-                    className="text-nowrap text-truncate"
+                    className="text-truncate"
                     style={{ maxWidth: "200px" }}
                     title={loan.book?.title}
                   >
                     {loan.book?.title || "N/A"}
                   </td>
-                  <td className="text-nowrap">
-                    {formatDate(loan.borrow_date)}
-                  </td>
-                  <td className="text-nowrap">
-                    {formatDate(loan.return_date)}
-                  </td>
-                  <td className="text-nowrap">
-                    {calculateRemainingTime(loan.return_date)}
-                  </td>
-                  <td className="text-nowrap">
+                  <td>{formatDate(loan.borrow_date)}</td>
+                  <td>{formatDate(loan.return_date)}</td>
+                  <td>{calculateRemainingTime(loan.return_date)}</td>
+                  <td>
                     <button
                       className="btn btn-primary btn-sm w-100"
                       onClick={() => handleReturn(loan.id)}
+                      disabled={loading}
                     >
                       Xác nhận trả
                     </button>

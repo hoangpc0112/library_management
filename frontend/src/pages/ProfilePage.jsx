@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import {
   FaEnvelope,
@@ -11,8 +11,10 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 const formatDate = (dateString) => {
-  if (!dateString) return "";
+  if (!dateString) return "N/A";
   const date = new Date(dateString);
   return `${date.getDate().toString().padStart(2, "0")}/${(date.getMonth() + 1)
     .toString()
@@ -20,12 +22,13 @@ const formatDate = (dateString) => {
 };
 
 const getBookStatus = (returnDate) => {
+  if (!returnDate) return { class: "bg-secondary", text: "N/A" };
   const dueDate = new Date(returnDate);
   const today = new Date();
   const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
 
   if (daysLeft <= 0) {
-    return { class: "bg-danger", text: "Quá hạn" };
+    return { class: "bg-danger", text: `Quá hạn ${Math.abs(daysLeft)} ngày` };
   } else if (daysLeft <= 3) {
     return { class: "bg-warning", text: "Sắp hết hạn" };
   } else {
@@ -34,125 +37,72 @@ const getBookStatus = (returnDate) => {
 };
 
 const ProfilePage = () => {
-  const [userData, setUserData] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentBorrows, setCurrentBorrows] = useState([]);
-  const [booksData, setBooksData] = useState({});
+  const token = localStorage.getItem("token");
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-  const fetchUserData = useCallback(async () => {
+  const fetchProfile = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const token = localStorage.getItem("token");
-
-      const [userResponse, borrowResponse] = await Promise.all([
-        axios.get(`${API_URL}/user/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get(`${API_URL}/borrow/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
-
-      const allBorrows = borrowResponse.data;
-      const activeBorrows = allBorrows.filter(
-        (borrow) => borrow.status === "approved"
-      );
-      const returnedBorrows = allBorrows.filter(
-        (borrow) => borrow.status === "returned"
-      );
-
-      const bookIds = [...activeBorrows, ...returnedBorrows].map(
-        (item) => item.book_id
-      );
-      const uniqueBookIds = [...new Set(bookIds)];
-
-      const booksInfo = await fetchBookDetails(uniqueBookIds);
-
-      setUserData({
-        ...userResponse.data,
-        avatar:
-          "https://i.pinimg.com/736x/21/91/6e/21916e491ef0d796398f5724c313bbe7.jpg",
-        borrowedBooks: activeBorrows.length,
-        returnedBooks: returnedBorrows.length,
-        createdAt: formatDate(userResponse.data.created_at),
+      const response = await axios.get(`${API_URL}/user/me`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      setBooksData(booksInfo);
-      setCurrentBorrows(activeBorrows);
+      setProfile({
+        ...response.data,
+        user: {
+          ...response.data.user,
+          createdAt: formatDate(response.data.user.created_at),
+          avatar:
+            "https://i.pinimg.com/736x/21/91/6e/21916e491ef0d796398f5724c313bbe7.jpg",
+        },
+      });
+      setError(null);
     } catch (err) {
-      setError("Không thể tải thông tin người dùng. Vui lòng thử lại sau.");
+      setError(
+        "Không thể tải thông tin hồ sơ: " +
+          (err.response?.data?.detail || err.message || "Lỗi không xác định")
+      );
     } finally {
       setLoading(false);
     }
-  }, [API_URL]);
+  }, [token]);
 
-  const fetchBookDetails = async (bookIds) => {
-    const booksInfo = {};
-    await Promise.all(
-      bookIds.map(async (bookId) => {
-        try {
-          const bookResponse = await axios.get(`${API_URL}/book/${bookId}`);
-          booksInfo[bookId] = bookResponse.data;
-        } catch (err) {
-          booksInfo[bookId] = { title: `Sách #${bookId}` };
-        }
-      })
+  useEffect(() => {
+    document.title = "Hồ sơ sinh viên";
+    window.scrollTo(0, 0);
+    fetchProfile();
+  }, [fetchProfile]);
+
+  const accountStatus = useMemo(() => {
+    const overdue = profile?.current_borrows?.some(
+      (borrow) => new Date(borrow.return_date) < new Date()
     );
-    return booksInfo;
-  };
-
-  const getAccountStatus = useMemo(() => {
-    const overdue = currentBorrows.some((book) => {
-      const dueDate = new Date(book.return_date);
-      const today = new Date();
-      return dueDate < today;
-    });
-
     return overdue
       ? {
           class: "text-danger",
           text: "Có sách quá hạn",
           icon: "bi bi-exclamation-circle",
         }
-      : {
-          class: "text-success",
-          text: "Tốt",
-          icon: "bi bi-check-circle",
-        };
-  }, [currentBorrows]);
-
-  const getBookTitle = useCallback(
-    (bookId) => booksData[bookId]?.title || `Sách #${bookId}`,
-    [booksData]
-  );
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    document.title = "Hồ sơ sinh viên";
-    fetchUserData();
-  }, [fetchUserData]);
+      : { class: "text-success", text: "Tốt", icon: "bi bi-check-circle" };
+  }, [profile]);
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
-  if (!userData) return null;
+  if (!profile) return null;
 
   return (
     <div className="min-vh-100 py-5">
       <div className="container">
-        <div className="row">
-          <ProfileCard userData={userData} />
+        <div className="row g-4">
+          <ProfileCard user={profile.user} />
           <div className="col-lg-8">
             <UserStatistics
-              userData={userData}
-              accountStatus={getAccountStatus}
+              borrowedBooks={profile.borrowed_books_count}
+              returnedBooks={profile.returned_books_count}
+              accountStatus={accountStatus}
             />
-            <BorrowedBooksList
-              currentBorrows={currentBorrows}
-              getBookTitle={getBookTitle}
-            />
+            <BorrowedBooksList currentBorrows={profile.current_borrows} />
             <AccountSettings />
           </div>
         </div>
@@ -161,9 +111,11 @@ const ProfilePage = () => {
   );
 };
 
-// Extracted sub-components for better organization
 const LoadingSpinner = () => (
-  <div className="container text-center py-5" style={{ minHeight: "100vh" }}>
+  <div
+    className="d-flex justify-content-center align-items-center"
+    style={{ minHeight: "100vh" }}
+  >
     <div className="spinner-border text-primary" role="status">
       <span className="visually-hidden">Đang tải...</span>
     </div>
@@ -172,136 +124,112 @@ const LoadingSpinner = () => (
 
 const ErrorMessage = ({ message }) => (
   <div className="min-vh-100 d-flex justify-content-center align-items-center">
-    <div className="alert alert-danger" role="alert">
+    <div
+      className="alert alert-danger alert-dismissible fade show rounded-3"
+      style={{ maxWidth: "800px" }}
+    >
       {message}
+      <button
+        type="button"
+        className="btn-close"
+        onClick={() => window.location.reload()}
+      />
     </div>
   </div>
 );
 
-const ProfileCard = ({ userData }) => (
-  <div className="col-lg-4 mb-4">
+const ProfileCard = ({ user }) => (
+  <div className="col-lg-4">
     <div className="card border-0 shadow-sm rounded-3">
       <div className="card-body text-center p-4">
-        <div className="mb-4">
-          <img
-            src={userData.avatar}
-            alt="Avatar"
-            className="rounded-circle img-thumbnail shadow"
-            style={{
-              width: "150px",
-              height: "150px",
-              objectFit: "cover",
-            }}
-          />
-        </div>
-        <h2 className="fw-bold">{userData.full_name}</h2>
-        <div className="text-muted">{userData.msv}</div>
+        <img
+          src={user.avatar}
+          alt="Avatar"
+          className="rounded-circle img-thumbnail shadow mb-4"
+          style={{ width: "150px", height: "150px", objectFit: "cover" }}
+        />
+        <h2 className="fw-bold">{user.full_name}</h2>
+        <div className="text-muted">{user.msv}</div>
       </div>
       <hr className="my-0" />
       <div className="card-body p-4">
         <h5 className="mb-3 fw-bold text-primary">Thông tin cá nhân</h5>
-        <div className="mb-3">
-          <div className="d-flex align-items-center mb-2">
-            <FaEnvelope className="text-primary me-2" />
-            <div className="text-muted small">Email</div>
+        {[
+          { icon: FaEnvelope, label: "Email", value: user.email },
+          { icon: FaIdCard, label: "Mã sinh viên", value: user.msv },
+          { icon: FaBook, label: "Khoa", value: user.faculty },
+          { icon: FaGraduationCap, label: "Ngành", value: user.major },
+          { icon: FaBirthdayCake, label: "Năm sinh", value: user.birth_year },
+          { icon: FaHistory, label: "Ngày tham gia", value: user.createdAt },
+        ].map(({ icon: Icon, label, value }, index) => (
+          <div className="mb-3" key={index}>
+            <div className="d-flex align-items-center mb-2">
+              <Icon className="text-primary me-2" />
+              <div className="text-muted small">{label}</div>
+            </div>
+            <div>{value || "N/A"}</div>
           </div>
-          <div>{userData.email}</div>
-        </div>
-        <div className="mb-3">
-          <div className="d-flex align-items-center mb-2">
-            <FaIdCard className="text-primary me-2" />
-            <div className="text-muted small">Mã sinh viên</div>
-          </div>
-          <div>{userData.msv}</div>
-        </div>
-        <div className="mb-3">
-          <div className="d-flex align-items-center mb-2">
-            <FaBook className="text-primary me-2" />
-            <div className="text-muted small">Khoa</div>
-          </div>
-          <div>{userData.faculty}</div>
-        </div>
-        <div className="mb-3">
-          <div className="d-flex align-items-center mb-2">
-            <FaGraduationCap className="text-primary me-2" />
-            <div className="text-muted small">Ngành</div>
-          </div>
-          <div>{userData.major}</div>
-        </div>
-        <div className="mb-3">
-          <div className="d-flex align-items-center mb-2">
-            <FaBirthdayCake className="text-primary me-2" />
-            <div className="text-muted small">Năm sinh</div>
-          </div>
-          <div>{userData.birth_year}</div>
-        </div>
-        <div>
-          <div className="d-flex align-items-center mb-2">
-            <FaHistory className="text-primary me-2" />
-            <div className="text-muted small">Ngày tham gia</div>
-          </div>
-          <div>{userData.createdAt}</div>
-        </div>
+        ))}
       </div>
     </div>
   </div>
 );
 
-const UserStatistics = ({ userData, accountStatus }) => (
-  <div className="row mb-4">
-    <div className="col-md-4 mb-3 mb-md-0">
-      <div className="card border-0 bg-primary bg-opacity-10 h-100">
-        <div className="card-body p-4">
-          <div className="d-flex align-items-center mb-3">
-            <div className="bg-primary rounded-3 p-3 me-3">
-              <FaBook className="text-white" />
+const UserStatistics = ({ borrowedBooks, returnedBooks, accountStatus }) => (
+  <div className="row g-4 mb-4">
+    {[
+      {
+        title: "Sách đang mượn",
+        value: borrowedBooks,
+        icon: FaBook,
+        color: "primary",
+      },
+      {
+        title: "Sách đã trả",
+        value: returnedBooks,
+        icon: FaHistory,
+        color: "success",
+      },
+      {
+        title: "Trạng thái",
+        value: accountStatus.text,
+        icon: FaShieldAlt,
+        color: "warning",
+        customClass: accountStatus.class,
+      },
+    ].map(({ title, value, icon: Icon, color, customClass }, index) => (
+      <div className="col-md-4" key={index}>
+        <div
+          className={`card border-0 bg-${color} bg-opacity-10 h-100 shadow-sm rounded-3`}
+        >
+          <div className="card-body p-4">
+            <div className="d-flex align-items-center mb-3">
+              <div className={`bg-${color} rounded-3 p-3 me-3`}>
+                <Icon className="text-white" />
+              </div>
+              <h5 className="card-title mb-0">{title}</h5>
             </div>
-            <h5 className="card-title mb-0">Sách đang mượn</h5>
+            <h3 className={`fw-bold mb-0 ${customClass || ""}`}>
+              {index === 2 && <i className={`${accountStatus.icon} me-2`}></i>}
+              {value}
+            </h3>
+            <p className="text-muted mt-2 mb-0">
+              {index === 0
+                ? "Trên tổng 5 quyển tối đa"
+                : index === 1
+                ? "Trong học kỳ này"
+                : accountStatus.text === "Tốt"
+                ? "Không có sách quá hạn"
+                : "Vui lòng trả sách đúng hạn"}
+            </p>
           </div>
-          <h2 className="display-4 fw-bold mb-0">{userData.borrowedBooks}</h2>
-          <p className="text-muted mt-2 mb-0">Trên tổng 5 quyển tối đa</p>
         </div>
       </div>
-    </div>
-    <div className="col-md-4 mb-3 mb-md-0">
-      <div className="card border-0 bg-success bg-opacity-10 h-100">
-        <div className="card-body p-4">
-          <div className="d-flex align-items-center mb-3">
-            <div className="bg-success rounded-3 p-3 me-3">
-              <FaHistory className="text-white" />
-            </div>
-            <h5 className="card-title mb-0">Sách đã trả</h5>
-          </div>
-          <h2 className="display-4 fw-bold mb-0">{userData.returnedBooks}</h2>
-          <p className="text-muted mt-2 mb-0">Trong học kỳ này</p>
-        </div>
-      </div>
-    </div>
-    <div className="col-md-4">
-      <div className="card border-0 bg-warning bg-opacity-10 h-100">
-        <div className="card-body p-4">
-          <div className="d-flex align-items-center mb-3">
-            <div className="bg-warning rounded-3 p-3 me-3">
-              <FaShieldAlt className="text-white" />
-            </div>
-            <h5 className="card-title mb-0">Trạng thái</h5>
-          </div>
-          <h3 className={`${accountStatus.class} fw-bold mb-0`}>
-            <i className={`${accountStatus.icon} me-2`}></i>
-            {accountStatus.text}
-          </h3>
-          <p className="text-muted mt-2 mb-0">
-            {accountStatus.text === "Tốt"
-              ? "Không có sách quá hạn"
-              : "Vui lòng trả sách đúng hạn"}
-          </p>
-        </div>
-      </div>
-    </div>
+    ))}
   </div>
 );
 
-const BorrowedBooksList = ({ currentBorrows, getBookTitle }) => (
+const BorrowedBooksList = ({ currentBorrows }) => (
   <div className="card border-0 shadow-sm rounded-3 mb-4">
     <div className="card-header border-0 pt-4 pb-3">
       <h4 className="mb-0 fw-bold">Sách đang mượn</h4>
@@ -309,19 +237,11 @@ const BorrowedBooksList = ({ currentBorrows, getBookTitle }) => (
     <div className="card-body p-0">
       {currentBorrows.length > 0 ? (
         <div className="table-responsive">
-          <table className="table mb-0 table-hover">
-            <thead className="table">
+          <table className="table table-hover mb-0">
+            <thead>
               <tr>
                 <th scope="col">#</th>
-                <th
-                  scope="col"
-                  style={{
-                    maxWidth: "200px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
+                <th scope="col" style={{ maxWidth: "200px" }}>
                   Tên sách
                 </th>
                 <th scope="col">Ngày mượn</th>
@@ -332,24 +252,20 @@ const BorrowedBooksList = ({ currentBorrows, getBookTitle }) => (
             <tbody>
               {currentBorrows.map((book, index) => {
                 const status = getBookStatus(book.return_date);
-
                 return (
                   <tr key={book.id}>
-                    <th scope="row">{index + 1}</th>
+                    <td>{index + 1}</td>
                     <td
-                      style={{
-                        maxWidth: "200px",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
+                      className="text-truncate"
+                      style={{ maxWidth: "200px" }}
+                      title={book.book.title}
                     >
-                      {getBookTitle(book.book_id)}
+                      {book.book.title}
                     </td>
                     <td>{formatDate(book.borrow_date)}</td>
                     <td>{formatDate(book.return_date)}</td>
                     <td>
-                      <span className={`badge ${status.class}`}>
+                      <span className={`badge ${status.class} px-3 py-2`}>
                         {status.text}
                       </span>
                     </td>
@@ -361,20 +277,18 @@ const BorrowedBooksList = ({ currentBorrows, getBookTitle }) => (
         </div>
       ) : (
         <div className="text-center py-5">
-          <div className="text-muted">
-            <i className="bi bi-book fs-1 d-block mb-3"></i>
-            <h5>Bạn chưa mượn sách nào</h5>
-            <p>Hãy tìm và mượn sách từ thư viện</p>
-            <Link to="/book" className="btn btn-primary">
-              <i className="bi bi-search me-1"></i> Tìm sách
-            </Link>
-          </div>
+          <i className="bi bi-book fs-1 text-muted d-block mb-3"></i>
+          <h5 className="text-muted">Bạn chưa mượn sách nào</h5>
+          <p className="text-muted">Hãy tìm và mượn sách từ thư viện</p>
+          <Link to="/book" className="btn btn-primary px-4">
+            <i className="bi bi-search me-2"></i>Tìm sách
+          </Link>
         </div>
       )}
     </div>
     <div className="card-footer border-0 py-3">
-      <Link to="/borrowed" className="btn btn-outline-primary">
-        <i className="bi bi-list me-1"></i> Xem lịch sử mượn sách
+      <Link to="/borrowed" className="btn btn-outline-primary px-4">
+        <i className="bi bi-list me-2"></i>Xem lịch sử mượn sách
       </Link>
     </div>
   </div>
@@ -385,7 +299,7 @@ const AccountSettings = () => (
     <div className="card-header border-0 pt-4 pb-3">
       <h4 className="mb-0 fw-bold">Cài đặt tài khoản</h4>
     </div>
-    <div className="card-body">
+    <div className="card-body p-4">
       <div className="row g-4">
         <div className="col-md-6">
           <div className="form-check form-switch">
@@ -422,11 +336,11 @@ const AccountSettings = () => (
       </div>
     </div>
     <div className="card-footer border-0 py-3">
-      <button className="btn btn-primary me-2 mb-3">
-        <i className="bi bi-lock me-1"></i> Đổi mật khẩu
+      <button className="btn btn-primary px-4 me-2">
+        <i className="bi bi-lock me-2"></i>Đổi mật khẩu
       </button>
-      <button className="btn btn-outline-secondary mb-3">
-        <i className="bi bi-sliders me-1"></i> Cài đặt nâng cao
+      <button className="btn btn-outline-secondary px-4">
+        <i className="bi bi-sliders me-2"></i>Cài đặt nâng cao
       </button>
     </div>
   </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   FaUsers,
@@ -9,6 +9,8 @@ import {
   FaBook,
 } from "react-icons/fa";
 import axios from "axios";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
@@ -27,235 +29,215 @@ const AdminDashboard = () => {
     num_pages: "",
     gg_drive_link: "",
   });
-  const [error, setError] = useState("");
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const token = localStorage.getItem("token");
+
+  const fetchStats = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API_URL}/borrow/stats/counts`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setStats(response.data);
+      setError(null);
+    } catch (err) {
+      setError("Không thể tải dữ liệu thống kê. Vui lòng thử lại sau.");
+      console.error("Error fetching stats:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = "Quản lý thư viện";
     fetchStats();
-  }, []);
-
-  const fetchStats = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const booksResponse = await axios.get(`${API_URL}/book/`);
-      const totalBooks =
-        booksResponse.data.total_books || booksResponse.data.books.length;
-
-      const usersResponse = await axios.get(`${API_URL}/user/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const totalUsers = usersResponse.data.length || 0;
-
-      const borrowResponse = await axios.get(`${API_URL}/borrow/requests`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const pendingRequests = borrowResponse.data.length;
-
-      const activeLoansResponse = await axios.get(`${API_URL}/borrow/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const activeLoans = activeLoansResponse.data.filter(
-        (borrow) => borrow.status === "approved"
-      ).length;
-
-      setStats({
-        totalBooks,
-        totalUsers,
-        activeLoans,
-        pendingRequests,
-      });
-    } catch (error) {
-      console.error("Không thể tải dữ liệu thống kê:", error);
-    }
-  };
+  }, [fetchStats]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAddBook = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem("token");
-      const dataToSubmit = {
-        ...formData,
-        published_year: formData.published_year
-          ? parseInt(formData.published_year)
-          : null,
-        num_pages: formData.num_pages ? parseInt(formData.num_pages) : null,
-        average_rating: 0,
-        ratings_count: 0,
-        gg_drive_link: formData.gg_drive_link || null,
-      };
+  const handleAddBook = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      try {
+        const dataToSubmit = {
+          ...formData,
+          published_year: formData.published_year
+            ? parseInt(formData.published_year, 10)
+            : null,
+          num_pages: formData.num_pages
+            ? parseInt(formData.num_pages, 10)
+            : null,
+          average_rating: 0,
+          ratings_count: 0,
+          gg_drive_link: formData.gg_drive_link || null,
+        };
 
-      await axios.post(`${API_URL}/book/`, dataToSubmit, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+        await axios.post(`${API_URL}/book/`, dataToSubmit, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-      setShowModal(false);
-      setFormData({
-        title: "",
-        author: "",
-        publisher: "",
-        image_url: "",
-        published_year: "",
-        num_pages: "",
-        gg_drive_link: "",
-      });
-      fetchStats();
-    } catch (err) {
-      setError(
-        "Không thể thêm sách mới: " +
-          (err.response?.data?.detail || err.message)
-      );
-    }
-  };
+        setShowModal(false);
+        setFormData({
+          title: "",
+          author: "",
+          publisher: "",
+          image_url: "",
+          published_year: "",
+          num_pages: "",
+          gg_drive_link: "",
+        });
+        setError(null);
+        fetchStats();
+      } catch (err) {
+        setError(
+          "Không thể thêm sách mới: " +
+            (err.response?.data?.detail || err.message)
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [formData, token, fetchStats]
+  );
 
-  return (
-    <div className="container">
-      <div className="container-fluid mt-4">
-        <div className="row mb-4">
-          <div className="col-12">
-            <div className="alert alert-info d-flex justify-content-between align-items-center">
-              <span>
-                <strong>Xin chào, Admin!</strong> Có {stats.pendingRequests} yêu
-                cầu mượn sách đang cần xử lý.
-              </span>
-              <button
-                className="btn btn-success"
-                onClick={() => setShowModal(true)}
-              >
-                <FaPlus className="me-2" />
-                Thêm sách mới
-              </button>
-            </div>
+  const StatCard = ({ title, value, Icon, bgColor }) => (
+    <div className="col-md-3 col-sm-6">
+      <div className={`card ${bgColor} text-white shadow-sm mb-4 rounded-3`}>
+        <div className="card-body d-flex justify-content-between align-items-center">
+          <div>
+            <h6 className="card-title mb-1">{title}</h6>
+            <h2 className="mb-0">{value}</h2>
           </div>
-        </div>
-
-        <div className="row mb-4">
-          <div className="col-md-3">
-            <div className="card bg-primary text-white shadow-sm mb-3">
-              <div className="card-body">
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 className="card-title">Tổng số sách</h6>
-                    <h2>{stats.totalBooks}</h2>
-                  </div>
-                  <FaBook size={40} opacity={0.7} />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div className="card bg-success text-white shadow-sm mb-3">
-              <div className="card-body">
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 className="card-title">Người dùng</h6>
-                    <h2>{stats.totalUsers}</h2>
-                  </div>
-                  <FaUsers size={40} opacity={0.7} />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div className="card bg-warning text-white shadow-sm mb-3">
-              <div className="card-body">
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 className="card-title">Đang mượn</h6>
-                    <h2>{stats.activeLoans}</h2>
-                  </div>
-                  <FaExchangeAlt size={40} opacity={0.7} />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div className="card bg-danger text-white shadow-sm mb-3">
-              <div className="card-body">
-                <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 className="card-title">Yêu cầu mới</h6>
-                    <h2>{stats.pendingRequests}</h2>
-                  </div>
-                  <FaClipboardList size={40} opacity={0.7} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row g-4">
-          <div className="col-md-4 col-lg-3">
-            <div className="card shadow-sm h-100">
-              <div className="card-body text-center">
-                <FaClipboardList className="text-primary mb-3" size={36} />
-                <h5 className="card-title">Yêu cầu mượn sách</h5>
-                <p className="card-text">
-                  Quản lý các yêu cầu mượn sách từ người dùng.
-                </p>
-                <Link
-                  to="/admin/borrow-requests"
-                  className="btn btn-primary w-100"
-                >
-                  Xem yêu cầu mượn sách
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-4 col-lg-3">
-            <div className="card shadow-sm h-100">
-              <div className="card-body text-center">
-                <FaUsers className="text-warning mb-3" size={36} />
-                <h5 className="card-title">Quản lý người dùng</h5>
-                <p className="card-text">
-                  Quản lý thông tin người dùng trong hệ thống.
-                </p>
-                <Link to="/admin/user" className="btn btn-warning w-100">
-                  Quản lý người dùng
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-4 col-lg-3">
-            <div className="card shadow-sm h-100">
-              <div className="card-body text-center">
-                <FaChartBar className="text-info mb-3" size={36} />
-                <h5 className="card-title">Thống kê</h5>
-                <p className="card-text">
-                  Xem báo cáo thống kê về hoạt động thư viện.
-                </p>
-                <Link to="/admin/stat" className="btn btn-info w-100">
-                  Xem thống kê
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-4 col-lg-3">
-            <div className="card shadow-sm h-100">
-              <div className="card-body text-center">
-                <FaExchangeAlt className="text-secondary mb-3" size={36} />
-                <h5 className="card-title">Quản lý mượn/trả</h5>
-                <p className="card-text">
-                  Theo dõi và quản lý sách đang được mượn.
-                </p>
-                <Link to="/admin/loan" className="btn btn-secondary w-100">
-                  Quản lý mượn/trả
-                </Link>
-              </div>
-            </div>
-          </div>
+          <Icon size={40} opacity={0.7} />
         </div>
       </div>
+    </div>
+  );
+
+  const ActionCard = ({ title, description, Icon, link, btnClass }) => (
+    <div className="col-md-4 col-lg-3 col-sm-6">
+      <div className="card shadow-sm h-100 rounded-3">
+        <div className="card-body text-center">
+          <Icon className={`mb-3 text-${btnClass.split("-")[1]}`} size={36} />
+          <h5 className="card-title">{title}</h5>
+          <p className="card-text text-muted">{description}</p>
+          <Link to={link} className={`btn ${btnClass} w-100`}>
+            {title}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="container py-5">
+      <div className="mb-4">
+        <div className="alert alert-info d-flex justify-content-between align-items-center rounded-3">
+          <span>
+            <strong>Xin chào, Admin!</strong> Có {stats.pending_requests} yêu
+            cầu mượn sách đang cần xử lý.
+          </span>
+          <button
+            className="btn btn-success px-3"
+            onClick={() => setShowModal(true)}
+            disabled={loading}
+          >
+            <FaPlus className="me-2" />
+            Thêm sách mới
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div
+          className="alert alert-danger alert-dismissible fade show mx-auto rounded-3"
+          style={{ maxWidth: "800px" }}
+        >
+          {error}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError(null)}
+          />
+        </div>
+      )}
+
+      {loading ? (
+        <div
+          className="d-flex justify-content-center align-items-center"
+          style={{ minHeight: "50vh" }}
+        >
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Đang tải...</span>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="row mb-5">
+            <StatCard
+              title="Tổng số sách"
+              value={stats.total_books}
+              Icon={FaBook}
+              bgColor="bg-primary"
+            />
+            <StatCard
+              title="Người dùng"
+              value={stats.total_users}
+              Icon={FaUsers}
+              bgColor="bg-success"
+            />
+            <StatCard
+              title="Đang mượn"
+              value={stats.active_loans}
+              Icon={FaExchangeAlt}
+              bgColor="bg-warning"
+            />
+            <StatCard
+              title="Yêu cầu mới"
+              value={stats.pending_requests}
+              Icon={FaClipboardList}
+              bgColor="bg-danger"
+            />
+          </div>
+
+          <div className="row g-4">
+            <ActionCard
+              title="Yêu cầu mượn sách"
+              description="Quản lý các yêu cầu mượn sách từ người dùng."
+              Icon={FaClipboardList}
+              link="/admin/borrow-requests"
+              btnClass="btn-primary"
+            />
+            <ActionCard
+              title="Quản lý người dùng"
+              description="Quản lý thông tin người dùng trong hệ thống."
+              Icon={FaUsers}
+              link="/admin/user"
+              btnClass="btn-warning"
+            />
+            <ActionCard
+              title="Thống kê"
+              description="Xem báo cáo thống kê về hoạt động thư viện."
+              Icon={FaChartBar}
+              link="/admin/stat"
+              btnClass="btn-info"
+            />
+            <ActionCard
+              title="Quản lý mượn/trả"
+              description="Theo dõi và quản lý sách đang được mượn."
+              Icon={FaExchangeAlt}
+              link="/admin/loan"
+              btnClass="btn-secondary"
+            />
+          </div>
+        </>
+      )}
 
       <div
         className={`modal fade ${showModal ? "show d-block" : ""}`}
@@ -264,115 +246,74 @@ const AdminDashboard = () => {
           backgroundColor: showModal ? "rgba(0,0,0,0.5)" : "transparent",
         }}
       >
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Thêm sách mới</h5>
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content rounded-3">
+            <div className="modal-header border-0">
+              <h5 className="modal-title fw-bold">Thêm sách mới</h5>
               <button
                 type="button"
                 className="btn-close"
                 onClick={() => setShowModal(false)}
-              ></button>
+                disabled={loading}
+              />
             </div>
             <div className="modal-body">
-              {error && <div className="alert alert-danger">{error}</div>}
+              {error && (
+                <div className="alert alert-danger alert-dismissible fade show rounded-3">
+                  {error}
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setError(null)}
+                  />
+                </div>
+              )}
               <form onSubmit={handleAddBook}>
-                <div className="mb-3">
-                  <label className="form-label">Tiêu đề</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="Nhập tiêu đề sách"
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Tác giả</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="author"
-                    value={formData.author}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="Nhập tên tác giả"
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Nhà xuất bản</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="publisher"
-                    value={formData.publisher}
-                    onChange={handleInputChange}
-                    placeholder="Nhập tên nhà xuất bản"
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">URL ảnh</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="image_url"
-                    value={formData.image_url}
-                    onChange={handleInputChange}
-                    placeholder="Nhập URL ảnh bìa sách"
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Năm xuất bản</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    name="published_year"
-                    value={formData.published_year}
-                    onChange={handleInputChange}
-                    placeholder="Nhập năm xuất bản"
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Số trang</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    name="num_pages"
-                    value={formData.num_pages}
-                    onChange={handleInputChange}
-                    placeholder="Nhập số trang"
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Google Drive Link</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="gg_drive_link"
-                    value={formData.gg_drive_link}
-                    onChange={handleInputChange}
-                    placeholder="Nhập link Google Drive"
-                  />
-                </div>
+                {[
+                  { label: "Tiêu đề", name: "title", required: true },
+                  { label: "Tác giả", name: "author", required: true },
+                  { label: "Nhà xuất bản", name: "publisher", required: true },
+                  { label: "URL ảnh", name: "image_url" },
+                  {
+                    label: "Năm xuất bản",
+                    name: "published_year",
+                    type: "number",
+                  },
+                  { label: "Số trang", name: "num_pages", type: "number" },
+                  { label: "Google Drive Link", name: "gg_drive_link" },
+                ].map(({ label, name, type = "text", required = false }) => (
+                  <div className="mb-3" key={name}>
+                    <label className="form-label fw-medium">{label}</label>
+                    <input
+                      type={type}
+                      className="form-control rounded-pill"
+                      name={name}
+                      value={formData[name]}
+                      onChange={handleInputChange}
+                      required={required}
+                      placeholder={`Nhập ${label.toLowerCase()}`}
+                      disabled={loading}
+                    />
+                  </div>
+                ))}
               </form>
             </div>
-            <div className="modal-footer">
+            <div className="modal-footer border-0">
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-secondary rounded-pill px-3"
                 onClick={() => setShowModal(false)}
+                disabled={loading}
               >
                 Đóng
               </button>
               <button
                 type="button"
-                className="btn btn-primary"
+                className="btn btn-primary rounded-pill px-3"
                 onClick={handleAddBook}
+                disabled={loading}
               >
-                Thêm sách
+                {loading ? "Đang thêm..." : "Thêm sách"}
               </button>
             </div>
           </div>

@@ -19,7 +19,6 @@ const SingleBook = () => {
   const [borrowStatus, setBorrowStatus] = useState(null);
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-  // Create a memoized axios instance
   const createAxiosInstance = useCallback(() => {
     const token = localStorage.getItem("token");
     return token
@@ -29,7 +28,6 @@ const SingleBook = () => {
       : null;
   }, []);
 
-  // Optimize book fetching
   const fetchBook = useCallback(async () => {
     try {
       setLoading(true);
@@ -38,85 +36,75 @@ const SingleBook = () => {
       setError(false);
     } catch (err) {
       setError(true);
-      console.error("Lỗi khi lấy thông tin sách:", err);
+      console.error("Error fetching book:", err);
     } finally {
       setLoading(false);
     }
   }, [API_URL, id]);
 
-  // Optimize borrow status checking
   const checkBorrowStatus = useCallback(async () => {
-    if (!currentUser) return;
+    if (!currentUser) return null;
 
     try {
       const axiosInstance = createAxiosInstance();
-      if (!axiosInstance) return;
+      if (!axiosInstance) return null;
 
-      const response = await axiosInstance.get(`${API_URL}/borrow/all`);
-      const allRequests = response.data;
+      const response = await axiosInstance.get(`${API_URL}/book/${id}`);
+      const bookRequests = response.data;
 
-      const userBookRequests = allRequests.filter(
-        (request) =>
-          request.book_id === parseInt(id) && request.user_id === currentUser.id
+      const userRequests = bookRequests.filter(
+        (request) => request.user_id === currentUser.id
       );
 
-      const pendingRequest = userBookRequests.find(
+      const pendingRequest = userRequests.find(
         (request) => request.status === "pending"
       );
-      const approvedRequest = userBookRequests.find(
+      if (pendingRequest) return "pending";
+
+      const approvedRequest = userRequests.find(
         (request) => request.status === "approved"
       );
+      if (approvedRequest) return "approved";
 
-      const isBookBorrowedByOthers = allRequests.some(
+      const isBookBorrowedByOthers = bookRequests.some(
         (request) =>
-          request.book_id === parseInt(id) &&
-          request.status === "approved" &&
           request.user_id !== currentUser.id &&
+          request.status === "approved" &&
           ((request.actual_return_date === null &&
             new Date(request.return_date) > new Date()) ||
             (request.actual_return_date !== null &&
               new Date(request.actual_return_date) > new Date()))
       );
-
-      if (pendingRequest) return "pending";
-      if (approvedRequest) return "approved";
-      if (isBookBorrowedByOthers) return "unavailable";
-      return null;
+      return isBookBorrowedByOthers ? "unavailable" : null;
     } catch (error) {
-      console.error("Lỗi khi kiểm tra trạng thái mượn sách:", error);
+      console.error("Error checking borrow status:", error);
       return null;
     }
-  }, [API_URL, currentUser, id]);
+  }, [API_URL, currentUser, id, createAxiosInstance]);
 
-  // Scroll to top on component mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Fetch book data
   useEffect(() => {
     fetchBook();
   }, [fetchBook]);
 
-  // Check borrow status
   useEffect(() => {
     if (currentUser) {
       checkBorrowStatus().then(setBorrowStatus);
     }
   }, [currentUser, checkBorrowStatus]);
 
-  // Update document title
   useEffect(() => {
     document.title = book?.title || "Loading...";
   }, [book?.title]);
 
-  // Memoize book description
   const bookDescription = useMemo(() => {
     if (!book) return null;
     return `${book.title} là một cuốn sách dài ${book.num_pages} trang được xuất bản bởi ${book.publisher} vào năm ${book.published_year}. Nó được viết bởi ${book.author} và đã nhận được đánh giá trung bình là ${book.average_rating}/5 từ ${book.ratings_count} độc giả.`;
   }, [book]);
 
-  // Handle book deletion
   const handleDelete = useCallback(async () => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa sách này không?")) return;
 
@@ -128,16 +116,16 @@ const SingleBook = () => {
       await axiosInstance.delete(`${API_URL}/book/${id}`);
       navigate(-1);
     } catch (err) {
-      console.error("Lỗi khi xóa sách:", err);
+      console.error("Error deleting book:", err);
       alert(
         err.response?.data?.detail ||
           "Có lỗi xảy ra khi xóa sách. Vui lòng thử lại sau."
       );
+    } finally {
       setDeleteLoading(false);
     }
   }, [API_URL, id, navigate, createAxiosInstance]);
 
-  // Event handlers
   const handleEditSuccess = useCallback(() => {
     setIsEditing(false);
     fetchBook();
@@ -157,7 +145,6 @@ const SingleBook = () => {
     alert("Yêu cầu mượn sách đã được gửi thành công! Chờ quản lý phê duyệt.");
   }, []);
 
-  // Render loading state
   if (loading) {
     return (
       <div
@@ -171,7 +158,6 @@ const SingleBook = () => {
     );
   }
 
-  // Render error state
   if (error) {
     return (
       <div className="container my-5">
@@ -186,7 +172,6 @@ const SingleBook = () => {
     );
   }
 
-  // Render edit mode
   if (isEditing) {
     return (
       <div className="container my-4">
@@ -199,7 +184,6 @@ const SingleBook = () => {
     );
   }
 
-  // Render borrow mode
   if (isBorrowing) {
     return (
       <div className="container my-4">
@@ -212,7 +196,6 @@ const SingleBook = () => {
     );
   }
 
-  // Render book details
   return (
     <div className="container my-4">
       <div className="card border-0 shadow-sm">
@@ -233,7 +216,6 @@ const SingleBook = () => {
                 />
               </div>
             </div>
-
             <div className="col-lg-8 col-md-7">
               <h1 className="h2 fw-bold mb-1">{book.title}</h1>
               <p className="text-primary mb-2 h5">{book.author}</p>
@@ -274,10 +256,7 @@ const SingleBook = () => {
                     Bạn đang mượn cuốn sách này
                   </button>
                 ) : borrowStatus === "unavailable" ? (
-                  <button
-                    onClick={handleBorrow}
-                    className="btn btn-secondary flex-grow-1 disabled"
-                  >
+                  <button className="btn btn-secondary flex-grow-1" disabled>
                     Sách đang được mượn bởi người khác
                   </button>
                 ) : (

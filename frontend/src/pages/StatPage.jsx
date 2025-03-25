@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { FaBook, FaUsers, FaExclamationTriangle } from "react-icons/fa";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const Statistics = () => {
   const [stats, setStats] = useState({
@@ -11,97 +13,127 @@ const Statistics = () => {
     topBorrowers: [],
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+  const [error, setError] = useState(null);
+  const token = localStorage.getItem("token");
+
+  const fetchStats = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API_URL}/borrow/stats`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = response.data;
+      setStats({
+        totalBooks: data.total_books || 0,
+        totalUsers: data.total_users || 0,
+        overdueBooks: data.overdue_books || 0,
+        mostBorrowedBooks: Array.isArray(data.most_borrowed_books)
+          ? data.most_borrowed_books
+          : [],
+        topBorrowers: Array.isArray(data.top_borrowers)
+          ? data.top_borrowers
+          : [],
+      });
+      setError(null);
+    } catch (err) {
+      setError(
+        "Không thể tải dữ liệu thống kê: " +
+          (err.response?.data?.detail || err.message || "Lỗi không xác định")
+      );
+      setStats({
+        totalBooks: 0,
+        totalUsers: 0,
+        overdueBooks: 0,
+        mostBorrowedBooks: [],
+        topBorrowers: [],
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
 
   useEffect(() => {
     document.title = "Thống kê thư viện";
     window.scrollTo(0, 0);
     fetchStats();
-  }, []);
+  }, [fetchStats]);
 
-  const fetchStats = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
+  const StatCard = ({ title, value, Icon, bgColor }) => (
+    <div className="col-md-6 col-lg-4">
+      <div className={`card ${bgColor} text-white shadow-sm rounded-3 mb-4`}>
+        <div className="card-body d-flex align-items-center">
+          <Icon size={40} className="me-3" />
+          <div>
+            <h5 className="card-title mb-1">{title}</h5>
+            <h3 className="mb-0">{value}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
-      const [booksResponse, usersResponse, borrowResponse] = await Promise.all([
-        axios.get(`${API_URL}/book/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get(`${API_URL}/user/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get(`${API_URL}/borrow/all`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
-
-      const bookMap = new Map(
-        booksResponse.data.books.map((book) => [book.id, book.title])
-      );
-      const userMap = new Map(
-        usersResponse.data.map((user) => [user.id, user.full_name])
-      );
-
-      const totalBooks =
-        booksResponse.data.total_books || booksResponse.data.books.length;
-      const totalUsers = usersResponse.data.length;
-      const activeLoans = borrowResponse.data.filter(
-        (loan) => loan.status === "approved" && !loan.actual_return_date
-      );
-      const overdueBooks = activeLoans.filter(
-        (loan) => new Date(loan.return_date) < new Date()
-      ).length;
-
-      const bookBorrowCount = {};
-      borrowResponse.data.forEach((loan) => {
-        const bookTitle = bookMap.get(loan.book_id) || "Sách không xác định";
-        bookBorrowCount[bookTitle] = (bookBorrowCount[bookTitle] || 0) + 1;
-      });
-      const mostBorrowedBooks = Object.entries(bookBorrowCount)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([title, count]) => ({ title, count }));
-
-      const userBorrowCount = {};
-      borrowResponse.data.forEach((loan) => {
-        const userName =
-          userMap.get(loan.user_id) || "Người dùng không xác định";
-        userBorrowCount[userName] = (userBorrowCount[userName] || 0) + 1;
-      });
-      const topBorrowers = Object.entries(userBorrowCount)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([name, count]) => ({ name, count }));
-
-      setStats({
-        totalBooks,
-        totalUsers,
-        overdueBooks,
-        mostBorrowedBooks,
-        topBorrowers,
-      });
-      setLoading(false);
-    } catch (err) {
-      setError(
-        "Không thể tải dữ liệu thống kê: " +
-          (err.message || "Lỗi không xác định")
-      );
-      setLoading(false);
-    }
-  };
+  const StatTable = ({ title, data = [], headers, keyMap }) => (
+    <div className="col-md-6">
+      <div className="card shadow-sm rounded-3">
+        <div className="card-header border-0">
+          <h5 className="mb-0 fw-bold">{title}</h5>
+        </div>
+        <div className="card-body p-0">
+          <div className="table-responsive">
+            <table className="table table-striped table-bordered mb-0">
+              <thead>
+                <tr>
+                  {headers.map((header, idx) => (
+                    <th key={idx}>{header}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {data.length > 0 ? (
+                  data.map((item, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>
+                      <td>{item[keyMap[1]] || "N/A"}</td>
+                      <td>{item[keyMap[2]] || "0"}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={3} className="text-center text-muted py-3">
+                      Không có dữ liệu
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="container mt-4">
-      <h2 className="mb-4 text-center">Thống kê thư viện</h2>
+    <div className="container py-5">
+      <h2 className="mb-5 text-center fw-bold">Thống kê thư viện</h2>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      {error && (
+        <div
+          className="alert alert-danger alert-dismissible fade show mx-auto rounded-3"
+          style={{ maxWidth: "800px" }}
+        >
+          {error}
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setError(null)}
+          />
+        </div>
+      )}
 
       {loading ? (
         <div
-          className="container text-center py-5"
-          style={{ minHeight: "100vh" }}
+          className="d-flex justify-content-center align-items-center"
+          style={{ minHeight: "50vh" }}
         >
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Đang tải...</span>
@@ -109,97 +141,37 @@ const Statistics = () => {
         </div>
       ) : (
         <div className="row g-4">
-          <div className="col-md-6 col-lg-4">
-            <div className="card bg-primary text-white shadow">
-              <div className="card-body d-flex align-items-center">
-                <FaBook size={40} className="me-3" />
-                <div>
-                  <h5 className="card-title">Tổng số sách</h5>
-                  <h3>{stats.totalBooks}</h3>
-                </div>
-              </div>
-            </div>
-          </div>
+          <StatCard
+            title="Tổng số sách"
+            value={stats.totalBooks}
+            Icon={FaBook}
+            bgColor="bg-primary"
+          />
+          <StatCard
+            title="Tổng người dùng"
+            value={stats.totalUsers}
+            Icon={FaUsers}
+            bgColor="bg-success"
+          />
+          <StatCard
+            title="Sách quá hạn"
+            value={stats.overdueBooks}
+            Icon={FaExclamationTriangle}
+            bgColor="bg-danger"
+          />
 
-          <div className="col-md-6 col-lg-4">
-            <div className="card bg-success text-white shadow">
-              <div className="card-body d-flex align-items-center">
-                <FaUsers size={40} className="me-3" />
-                <div>
-                  <h5 className="card-title">Tổng người dùng</h5>
-                  <h3>{stats.totalUsers}</h3>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-6 col-lg-4">
-            <div className="card bg-danger text-white shadow">
-              <div className="card-body d-flex align-items-center">
-                <FaExclamationTriangle size={40} className="me-3" />
-                <div>
-                  <h5 className="card-title">Sách quá hạn</h5>
-                  <h3>{stats.overdueBooks}</h3>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-6">
-            <div className="card shadow">
-              <div className="card-header">
-                <h5 className="mb-2 mt-2">Top 5 sách được mượn nhiều nhất</h5>
-              </div>
-              <div className="card-body">
-                <table className="table table-striped table-bordered mb-0">
-                  <thead>
-                    <tr>
-                      <th>STT</th>
-                      <th>Tiêu đề sách</th>
-                      <th>Số lần mượn</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stats.mostBorrowedBooks.map((book, index) => (
-                      <tr key={index}>
-                        <td>{index + 1}</td>
-                        <td>{book.title}</td>
-                        <td>{book.count}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-6">
-            <div className="card shadow">
-              <div className="card-header">
-                <h5 className="mb-2 mt-2">Top 5 người mượn sách nhiều nhất</h5>
-              </div>
-              <div className="card-body">
-                <table className="table table-striped table-bordered mb-0">
-                  <thead>
-                    <tr>
-                      <th>STT</th>
-                      <th>Tên người dùng</th>
-                      <th>Số lần mượn</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stats.topBorrowers.map((user, index) => (
-                      <tr key={index}>
-                        <td>{index + 1}</td>
-                        <td>{user.name}</td>
-                        <td>{user.count}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+          <StatTable
+            title="Top 5 sách được mượn nhiều nhất"
+            data={stats.mostBorrowedBooks}
+            headers={["STT", "Tiêu đề sách", "Số lần mượn"]}
+            keyMap={["", "title", "count"]}
+          />
+          <StatTable
+            title="Top 5 người mượn sách nhiều nhất"
+            data={stats.topBorrowers}
+            headers={["STT", "Tên người dùng", "Số lần mượn"]}
+            keyMap={["", "name", "count"]}
+          />
         </div>
       )}
     </div>

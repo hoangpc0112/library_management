@@ -11,43 +11,42 @@ class UserCreate(BaseModel):
     faculty: Optional[str] = None
     major: Optional[str] = None
     birth_year: Optional[int] = None
-    created_at: Optional[str] = None
-
 
 class UserOut(BaseModel):
     email: EmailStr
     full_name: str
     msv: str
+    faculty: Optional[str] = None
+    major: Optional[str] = None
+    birth_year: Optional[int] = None
+    created_at: Optional[datetime] = None
+    is_admin: int
 
     class Config:
         from_attributes = True
 
 class UserUpdate(BaseModel):
-    full_name: str | None = None
-    email: str | None = None
-    msv: str | None = None
-    faculty: str | None = None
-    major: str | None = None
-    birth_year: int | None = None
-    is_admin: bool | None = None
+    full_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    msv: Optional[str] = None
+    faculty: Optional[str] = None
+    major: Optional[str] = None
+    birth_year: Optional[int] = None
+    is_admin: Optional[int] = None
 
     class Config:
         from_attributes = True
 
-
 class UserLogin(BaseModel):
-    msv: EmailStr
+    msv: str
     password: str
-
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
-
 class TokenData(BaseModel):
     id: Optional[str] = None
-
 
 class BookCreate(BaseModel):
     title: str
@@ -72,7 +71,6 @@ class BookUpdate(BaseModel):
     class Config:
         from_attributes = True
 
-
 class BookOut(BaseModel):
     id: int
     title: str
@@ -91,3 +89,48 @@ class BookOut(BaseModel):
 class BorrowRequestCreate(BaseModel):
     borrow_date: Optional[datetime] = None
     return_date: Optional[datetime] = None
+
+class BorrowRequestOut(BaseModel):
+    id: int
+    user_id: int
+    book_id: int
+    status: str
+    created_at: datetime
+    borrow_date: Optional[datetime] = None
+    return_date: Optional[datetime] = None
+    actual_return_date: Optional[datetime] = None
+    book: BookOut
+    user: UserOut
+
+    class Config:
+        from_attributes = True
+
+class AdminStats(BaseModel):
+    total_books: int
+    total_users: int
+    active_loans: int
+    pending_requests: int
+
+class TopBook(BaseModel):
+    title: str
+    count: int
+
+class TopBorrower(BaseModel):
+    name: str
+    count: int
+
+class LibraryStats(BaseModel):
+    total_books: int
+    total_users: int
+    overdue_books: int
+    most_borrowed_books: List[TopBook]
+    top_borrowers: List[TopBorrower]
+
+class UserProfileOut(BaseModel):
+    user: UserOut
+    current_borrows: List[BorrowRequestOut]
+    borrowed_books_count: int
+    returned_books_count: int
+
+    class Config:
+        from_attributes = True

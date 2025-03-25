@@ -19,19 +19,16 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const axiosInstance = axios.create({
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const response = await axios.get(`${API_URL}/user/me`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        const response = await axiosInstance.get(`${API_URL}/user/me`);
-        setCurrentUser(response.data);
+        setCurrentUser(response.data.user);
         setIsAuthenticated(true);
       } catch (error) {
-        console.error("Lỗi xác thực:", error);
-        if (error.response && error.response.status === 401) {
+        console.error("Authentication error:", error);
+        if (error.response?.status === 401) {
           localStorage.removeItem("token");
+          setIsAuthenticated(false);
         }
       } finally {
         setLoading(false);
@@ -51,7 +48,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.detail || "Đăng nhập thất bại",
+        message: error.response?.data?.detail || "Login failed",
       };
     }
   };
@@ -62,7 +59,7 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
   };
 
-  const isAdmin = () => currentUser && currentUser.is_admin;
+  const isAdmin = () => !!currentUser?.is_admin;
 
   const authContextValue = {
     currentUser,
@@ -76,9 +73,15 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={authContextValue}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
