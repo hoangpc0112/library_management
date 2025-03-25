@@ -13,6 +13,7 @@ class UserCreate(BaseModel):
     birth_year: Optional[int] = None
 
 class UserOut(BaseModel):
+    id: int
     email: EmailStr
     full_name: str
     msv: str
