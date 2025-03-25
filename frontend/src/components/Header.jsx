@@ -91,13 +91,13 @@ function Header() {
                       Hồ sơ
                     </Link>
                   </li>
-                  {isAdmin() && (
+                  {isAdmin() ? (
                     <li>
                       <Link className="dropdown-item" to="/admin">
                         Quản trị
                       </Link>
                     </li>
-                  )}
+                  ) : null}
                   <li>
                     <hr className="dropdown-divider" />
                   </li>

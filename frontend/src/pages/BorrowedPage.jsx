@@ -154,7 +154,7 @@ const BorrowedPage = () => {
           </Link>
         </div>
       ) : (
-        <div className="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-5 row-cols-xl-5 g-3">
+        <div className="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6 g-3">
           {borrowedBooks.map((borrow) => {
             const book = books[borrow.book_id];
             if (!book) return null;
@@ -163,29 +163,38 @@ const BorrowedPage = () => {
 
             return (
               <div className="col" key={borrow.id}>
-                <div className="card h-100 shadow-sm">
+                <div
+                  className="card h-100 shadow-sm"
+                  style={{ maxWidth: "200px" }}
+                >
                   <div className="position-relative">
                     <img
                       src={book.image_url}
                       alt={book.title}
                       className="card-img-top"
-                      style={{ height: "360px", objectFit: "cover" }}
+                      style={{
+                        minHeight: "240px",
+                        height: "280px",
+                        objectFit: "cover",
+                      }}
                     />
-                    <div className="position-absolute top-0 end-0 m-2">
+                    <div className="position-absolute top-0 end-0 m-1">
                       {getStatusBadge(borrow.status, remainingDays)}
                     </div>
                   </div>
-                  <div className="card-body">
-                    <h5 className="card-title" title={book.title}>
-                      {book.title.length > 30
-                        ? book.title.slice(0, 26) + "..."
+                  <div className="card-body p-2">
+                    <h6 className="card-title mb-1" title={book.title}>
+                      {book.title.length > 20
+                        ? book.title.slice(0, 17) + "..."
                         : book.title}
-                    </h5>
-                    <p className="card-text text-muted mb-1">{book.author}</p>
+                    </h6>
+                    <p className="card-text text-muted small mb-1">
+                      {book.author}
+                    </p>
 
-                    <div className="mt-3">
+                    <div className="mt-1 small">
                       {borrow.status === "approved" && (
-                        <div className="d-flex justify-content-between align-items-center mb-2">
+                        <div className="d-flex justify-content-between mb-1">
                           <span>Còn lại:</span>
                           <span
                             className={`fw-bold ${
@@ -203,28 +212,17 @@ const BorrowedPage = () => {
                         </div>
                       )}
 
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <span>Ngày tạo:</span>
+                      <div className="d-flex justify-content-between mb-1">
+                        <span>Ngày mượn:</span>
                         <span>
-                          {new Date(borrow.created_at).toLocaleDateString(
-                            "vi-VN"
-                          )}
+                          {new Date(
+                            borrow.borrow_date || borrow.created_at
+                          ).toLocaleDateString("vi-VN")}
                         </span>
                       </div>
 
-                      {borrow.borrow_date && (
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <span>Ngày mượn:</span>
-                          <span>
-                            {new Date(borrow.borrow_date).toLocaleDateString(
-                              "vi-VN"
-                            )}
-                          </span>
-                        </div>
-                      )}
-
                       {borrow.return_date && (
-                        <div className="d-flex justify-content-between align-items-center mb-2">
+                        <div className="d-flex justify-content-between mb-1">
                           <span>Hạn trả:</span>
                           <span>
                             {new Date(borrow.return_date).toLocaleDateString(
@@ -235,21 +233,20 @@ const BorrowedPage = () => {
                       )}
                     </div>
                   </div>
-                  <div className="card-footer border-top-0">
-                    <div className="d-flex justify-content-between gap-2">
+                  <div className="card-footer border-top-0 p-2">
+                    <div className="d-flex justify-content-between gap-1">
                       <Link
                         to={`/book/${book.id}`}
-                        className="btn btn-outline-primary flex-grow-1"
+                        className="btn btn-outline-primary btn-sm flex-grow-1"
                       >
-                        Xem chi tiết
+                        Chi tiết
                       </Link>
-
                       {borrow.status === "approved" && (
                         <button
                           onClick={() => handleReturnBook(borrow.id)}
-                          className="btn btn-success flex-grow-1"
+                          className="btn btn-success btn-sm flex-grow-1"
                         >
-                          Trả sách
+                          Trả
                         </button>
                       )}
                     </div>

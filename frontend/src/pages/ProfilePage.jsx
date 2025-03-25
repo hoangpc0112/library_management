@@ -440,10 +440,10 @@ const ProfilePage = () => {
                 </div>
               </div>
               <div className="card-footer border-0 py-3">
-                <button className="btn btn-primary me-2">
+                <button className="btn btn-primary me-2 mb-3">
                   <i className="bi bi-lock me-1"></i> Đổi mật khẩu
                 </button>
-                <button className="btn btn-outline-secondary">
+                <button className="btn btn-outline-secondary mb-3">
                   <i className="bi bi-sliders me-1"></i> Cài đặt nâng cao
                 </button>
               </div>

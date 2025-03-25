@@ -81,6 +81,22 @@ const LoanManagement = () => {
     return new Date(dateString).toLocaleDateString("vi-VN");
   };
 
+  const calculateRemainingTime = (returnDate) => {
+    const today = new Date();
+    const dueDate = new Date(returnDate);
+    const timeDiff = dueDate - today;
+    const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+    if (daysDiff < 0) {
+      return (
+        <span className="text-danger fw-bold">
+          Quá hạn {Math.abs(daysDiff)} ngày
+        </span>
+      );
+    }
+    return `${daysDiff} ngày`;
+  };
+
   return (
     <div className="container container-fluid py-4 px-3 px-md-4">
       <h2 className="mb-4 fw-bold text-center">Quản lý mượn/trả</h2>
@@ -133,6 +149,9 @@ const LoanManagement = () => {
                   Ngày trả dự kiến
                 </th>
                 <th scope="col" className="text-nowrap">
+                  Còn lại
+                </th>
+                <th scope="col" className="text-nowrap">
                   Hành động
                 </th>
               </tr>
@@ -159,6 +178,9 @@ const LoanManagement = () => {
                   </td>
                   <td className="text-nowrap">
                     {formatDate(loan.return_date)}
+                  </td>
+                  <td className="text-nowrap">
+                    {calculateRemainingTime(loan.return_date)}
                   </td>
                   <td className="text-nowrap">
                     <button
