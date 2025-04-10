@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import Response
 from sqlalchemy import func
 from datetime import datetime
+import unicodedata
 
 router = APIRouter()
 
@@ -54,14 +55,18 @@ def register(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
     user.full_name = user.full_name.title()
     user.faculty = "An toàn thông tin" if major_code == "at" else "Công nghệ thông tin"
 
-    ten_list = user.full_name.split()
+    full_name_no_accents = "".join(
+        c
+        for c in unicodedata.normalize("NFKD", user.full_name)
+        if not unicodedata.combining(c)
+    )
+    full_name_no_accents = full_name_no_accents.replace("Đ", "D").replace("đ", "d")
+    ten_list = full_name_no_accents.split()
+
+    ten_chinh = ten_list[-1]
+    chu_cai_dau = "".join(ten[0] for ten in ten_list[:-1])
     user.email = (
-        ten_list[-1]
-        + "".join(ten[0] for ten in ten_list[:-1])
-        + "."
-        + user.msv[:3]
-        + user.msv[5:]
-        + "@stu.ptit.edu.vn"
+        ten_chinh + chu_cai_dau + "." + user.msv[:3] + user.msv[5:] + "@stu.ptit.edu.vn"
     )
 
     new_user = models.User(**user.dict())
