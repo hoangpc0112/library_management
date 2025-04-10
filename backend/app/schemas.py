@@ -142,6 +142,7 @@ class LibraryStats(BaseModel):
     overdue_books: int
     most_borrowed_books: List[TopBook]
     top_borrowers: List[TopBorrower]
+    active_borrowed_books: int
 
     class Config:
         from_attributes = True

@@ -305,6 +305,16 @@ def get_library_stats(
         .count()
     )
 
+    active_borrowed_books = (
+        db.query(models.BorrowRequest)
+        .filter(
+            models.BorrowRequest.status == "approved",
+            models.BorrowRequest.actual_return_date.is_(None),
+            models.BorrowRequest.return_date > func.now(),
+        )
+        .count()
+    )
+
     now = datetime.now()
     first_day_last_month = (now.replace(day=1) - timedelta(days=1)).replace(day=1)
     last_day_last_month = now.replace(day=1) - timedelta(days=1)
@@ -352,4 +362,5 @@ def get_library_stats(
         "overdue_books": overdue_books,
         "most_borrowed_books": most_borrowed_books,
         "top_borrowers": top_borrowers_list,
+        "active_borrowed_books": active_borrowed_books,
     }
