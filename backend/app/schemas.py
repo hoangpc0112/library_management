@@ -2,6 +2,7 @@ from typing import Optional, List
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 
+
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
@@ -11,6 +12,8 @@ class UserCreate(BaseModel):
     faculty: Optional[str] = None
     major: Optional[str] = None
     birth_year: Optional[int] = None
+    created_at: Optional[str] = None
+
 
 class UserOut(BaseModel):
     id: int
@@ -26,6 +29,7 @@ class UserOut(BaseModel):
     class Config:
         from_attributes = True
 
+
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None
     email: Optional[EmailStr] = None
@@ -38,16 +42,20 @@ class UserUpdate(BaseModel):
     class Config:
         from_attributes = True
 
+
 class UserLogin(BaseModel):
     msv: str
     password: str
+
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TokenData(BaseModel):
     id: Optional[str] = None
+
 
 class BookCreate(BaseModel):
     title: str
@@ -60,6 +68,7 @@ class BookCreate(BaseModel):
     num_pages: int
     gg_drive_link: Optional[str] = None
 
+
 class BookUpdate(BaseModel):
     title: Optional[str] = None
     author: Optional[str] = None
@@ -71,6 +80,7 @@ class BookUpdate(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class BookOut(BaseModel):
     id: int
@@ -87,9 +97,11 @@ class BookOut(BaseModel):
     class Config:
         from_attributes = True
 
+
 class BorrowRequestCreate(BaseModel):
     borrow_date: Optional[datetime] = None
     return_date: Optional[datetime] = None
+
 
 class BorrowRequestOut(BaseModel):
     id: int
@@ -106,19 +118,23 @@ class BorrowRequestOut(BaseModel):
     class Config:
         from_attributes = True
 
+
 class AdminStats(BaseModel):
     total_books: int
     total_users: int
     active_loans: int
     pending_requests: int
 
+
 class TopBook(BaseModel):
     title: str
     count: int
 
+
 class TopBorrower(BaseModel):
     name: str
     count: int
+
 
 class LibraryStats(BaseModel):
     total_books: int
@@ -126,6 +142,7 @@ class LibraryStats(BaseModel):
     overdue_books: int
     most_borrowed_books: List[TopBook]
     top_borrowers: List[TopBorrower]
+
 
 class UserProfileOut(BaseModel):
     user: UserOut

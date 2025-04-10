@@ -15,46 +15,32 @@ def login(
     db: Session = Depends(database.get_db),
 ):
     user = (
-        db
-        .query(models.User)
+        db.query(models.User)
         .filter(func.lower(models.User.msv) == func.lower(user_credentials.username))
         .first()
     )
 
     if not user or not utils.verify_password(user_credentials.password, user.password):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Thông tin đăng nhập không chính xác."
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Thông tin đăng nhập không chính xác.",
         )
 
     access_token = oauth2.create_access_token(data={"user_id": user.id})
 
     return {"access_token": access_token, "token_type": "bearer"}
 
+
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-def register(
-    user: schemas.UserCreate,
-    db: Session = Depends(database.get_db)
-):
-    if (
-        db
-        .query(models.User)
-        .filter(models.User.email == user.email)
-        .first()
-    ):
+def register(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
+    if db.query(models.User).filter(models.User.email == user.email).first():
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Email đã được sử dụng."
+            status_code=status.HTTP_409_CONFLICT, detail="Email đã được sử dụng."
         )
 
-    if (
-        db
-        .query(models.User)
-        .filter(models.User.msv == user.msv)
-        .first()
-    ):
+    if db.query(models.User).filter(models.User.msv == user.msv).first():
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="MSV đã được sử dụng."
+            status_code=status.HTTP_409_CONFLICT, detail="MSV đã được sử dụng."
         )
 
     year_code = int(user.msv[1:3])
@@ -62,7 +48,7 @@ def register(
     major_map = {
         "at": "An toàn thông tin",
         "cn": "Công nghệ thông tin",
-        "kh": "Khoa học máy tính"
+        "kh": "Khoa học máy tính",
     }
 
     user.msv = user.msv.upper()
