@@ -161,13 +161,13 @@ const Statistics = () => {
           />
 
           <StatTable
-            title="Top 5 sách được mượn nhiều nhất"
+            title="Top 5 sách được mượn nhiều nhất tháng"
             data={stats.mostBorrowedBooks}
             headers={["STT", "Tiêu đề sách", "Số lần mượn"]}
             keyMap={["", "title", "count"]}
           />
           <StatTable
-            title="Top 5 người mượn sách nhiều nhất"
+            title="Top 5 người mượn sách nhiều nhất tháng"
             data={stats.topBorrowers}
             headers={["STT", "Tên người dùng", "Số lần mượn"]}
             keyMap={["", "name", "count"]}

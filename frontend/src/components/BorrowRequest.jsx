@@ -80,7 +80,7 @@ const BorrowRequest = ({ bookId, onSuccess, onCancel }) => {
   }, [currentUser]);
 
   return (
-    <div className="card border-0 shadow-sm">
+    <div className="container card border-0 shadow-sm">
       <div className="card-body p-4">
         <h3 className="card-title mb-4">Yêu cầu mượn sách</h3>
         {error && (
