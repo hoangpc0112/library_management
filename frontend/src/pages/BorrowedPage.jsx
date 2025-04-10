@@ -56,9 +56,7 @@ const BorrowedPage = () => {
       ),
       approved:
         remainingDays < 0 ? (
-          <span className="badge bg-danger">
-            Quá hạn {Math.abs(remainingDays)} ngày
-          </span>
+          <span className="badge bg-danger">Quá hạn</span>
         ) : remainingDays <= 3 ? (
           <span className="badge bg-warning text-dark">Sắp đến hạn</span>
         ) : (
@@ -74,32 +72,6 @@ const BorrowedPage = () => {
     );
   }, []);
 
-  const handleReturnBook = useCallback(
-    async (borrowId) => {
-      if (!window.confirm("Bạn có chắc chắn muốn trả sách này không?")) return;
-
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("Bạn cần đăng nhập để trả sách");
-
-        const axiosInstance = axios.create({
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        await axiosInstance.put(`${API_URL}/borrow/${borrowId}/return`);
-        alert("Sách đã được trả thành công!");
-        fetchBorrowedBooks();
-      } catch (err) {
-        console.error("Lỗi khi trả sách:", err);
-        alert(
-          err.response?.data?.detail ||
-            "Có lỗi xảy ra khi trả sách. Vui lòng thử lại sau."
-        );
-      }
-    },
-    [fetchBorrowedBooks]
-  );
-
   const bookCardRenderer = useMemo(() => {
     return borrowedBooks.map((borrow) => {
       const book = borrow.book;
@@ -109,15 +81,19 @@ const BorrowedPage = () => {
 
       return (
         <div className="col" key={borrow.id}>
-          <div className="card h-100 shadow-sm" style={{ maxWidth: "200px" }}>
+          <Link
+            to={`/book/${book.id}`}
+            className="card h-100 shadow-sm text-decoration-none"
+            style={{ maxWidth: "200px" }}
+          >
             <div className="position-relative">
               <img
                 src={book.image_url}
                 alt={book.title}
                 className="card-img-top"
                 style={{
-                  minHeight: "240px",
-                  height: "280px",
+                  minHeight: "200px",
+                  height: "240px",
                   objectFit: "cover",
                 }}
                 loading="lazy"
@@ -132,26 +108,9 @@ const BorrowedPage = () => {
                   ? `${book.title.slice(0, 17)}...`
                   : book.title}
               </h6>
-              <p className="card-text text-muted small mb-1">{book.author}</p>
-              <div className="mt-1 small">
-                {borrow.status === "approved" && (
-                  <div className="d-flex justify-content-between mb-1">
-                    <span>Còn lại:</span>
-                    <span
-                      className={`fw-bold ${
-                        remainingDays < 0
-                          ? "text-danger"
-                          : remainingDays <= 3
-                          ? "text-warning"
-                          : "text-success"
-                      }`}
-                    >
-                      {remainingDays < 0
-                        ? `Quá hạn ${Math.abs(remainingDays)} ngày`
-                        : `${remainingDays} ngày`}
-                    </span>
-                  </div>
-                )}
+              <p className="card-text text-muted small mb-0">{book.author}</p>
+              <hr className="my-2" />
+              <div className="small mt-0">
                 <div className="d-flex justify-content-between mb-1">
                   <span>Ngày mượn:</span>
                   <span>
@@ -170,29 +129,11 @@ const BorrowedPage = () => {
                 )}
               </div>
             </div>
-            <div className="card-footer border-top-0 p-2">
-              <div className="d-flex justify-content-between gap-1">
-                <Link
-                  to={`/book/${book.id}`}
-                  className="btn btn-outline-primary btn-sm flex-grow-1"
-                >
-                  Chi tiết
-                </Link>
-                {borrow.status === "approved" && (
-                  <button
-                    onClick={() => handleReturnBook(borrow.id)}
-                    className="btn btn-success btn-sm flex-grow-1"
-                  >
-                    Trả
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+          </Link>
         </div>
       );
     });
-  }, [borrowedBooks, calculateRemainingDays, getStatusBadge, handleReturnBook]);
+  }, [borrowedBooks, calculateRemainingDays, getStatusBadge]);
 
   if (loading) {
     return (

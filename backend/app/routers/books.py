@@ -14,7 +14,7 @@ def get_all(
     size: int = 24,
     search: str = "",
     sort: str = "id",
-    order: str = "asc"
+    order: str = "asc",
 ):
     query = db.query(models.Book)
 
@@ -35,40 +35,33 @@ def get_all(
         "total_pages": total_pages,
         "current_page": page,
         "books": books,
-        "total_books": total_books
+        "total_books": total_books,
     }
 
 
 @router.get("/{id}", response_model=schemas.BookOut)
-def get_one(
-    id: int,
-    db: Session = Depends(get_db)
-):
-    book = (
-        db
-        .query(models.Book)
-        .filter(models.Book.id == id)
-        .first()
-    )
+def get_one(id: int, db: Session = Depends(get_db)):
+    book = db.query(models.Book).filter(models.Book.id == id).first()
 
     if not book:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Không tìm thấy sách được yêu cầu."
+            detail=f"Không tìm thấy sách được yêu cầu.",
         )
 
     return book
+
 
 @router.post("/", response_model=schemas.BookOut)
 def create(
     book: schemas.BookCreate,
     db: Session = Depends(get_db),
-    current_user = Depends(oauth2.get_current_user)
+    current_user=Depends(oauth2.get_current_user),
 ):
     if not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Bạn không có quyền thêm sách."
+            detail="Không thể thực hiện yêu cầu",
         )
 
     new_book = models.Book(**book.dict())
@@ -84,12 +77,12 @@ def update(
     id: int,
     book: schemas.BookUpdate,
     db: Session = Depends(get_db),
-    current_user = Depends(oauth2.get_current_user)
+    current_user=Depends(oauth2.get_current_user),
 ):
     if not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Bạn không có quyền sửa thông tin sách."
+            detail="Không thể thực hiện yêu cầu",
         )
 
     query = db.query(models.Book).filter(models.Book.id == id)
@@ -98,7 +91,7 @@ def update(
     if not existing_book:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Không tìm thấy sách được yêu cầu."
+            detail=f"Không tìm thấy sách được yêu cầu.",
         )
 
     query.update(book.dict(exclude_unset=True), synchronize_session=False)
@@ -107,16 +100,17 @@ def update(
 
     return existing_book
 
+
 @router.delete("/{id}")
 def delete(
     id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(oauth2.get_current_user)
+    current_user=Depends(oauth2.get_current_user),
 ):
     if not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Bạn không có quyền xóa sách."
+            detail="Không thể thực hiện yêu cầu",
         )
 
     query = db.query(models.Book).filter(models.Book.id == id)
@@ -124,7 +118,7 @@ def delete(
     if not query.first():
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Không tìm thấy sách được yêu cầu."
+            detail=f"Không tìm thấy sách được yêu cầu.",
         )
 
     query.delete(synchronize_session=False)

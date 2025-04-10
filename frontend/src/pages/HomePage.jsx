@@ -32,8 +32,6 @@ const HomePage = () => {
         </div>
       </div>
 
-      <SearchInput />
-
       <section className="container my-5">
         <Carousel
           title="Được yêu thích hàng đầu"

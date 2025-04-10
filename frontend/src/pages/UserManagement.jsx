@@ -97,7 +97,7 @@ const UserManagement = () => {
         <p className="text-center text-muted py-5">Không có người dùng nào.</p>
       ) : (
         <div className="table-responsive">
-          <table className="table table-striped table-bordered table-hover align-middle">
+          <table className="table table-striped table-bordered table-hover align-middle text-center">
             <thead>
               <tr>
                 <th scope="col" className="text-nowrap">

@@ -1,4 +1,12 @@
-from sqlalchemy import DOUBLE_PRECISION, Column, Integer, String, ForeignKey, TIMESTAMP, text
+from sqlalchemy import (
+    DOUBLE_PRECISION,
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    TIMESTAMP,
+    text,
+)
 from .database import Base
 from sqlalchemy.orm import relationship
 
@@ -36,14 +44,21 @@ class User(Base):
 
     borrow_requests = relationship("BorrowRequest", back_populates="user")
 
+
 class BorrowRequest(Base):
     __tablename__ = "borrow_requests"
 
     id = Column(Integer, primary_key=True, nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    book_id = Column(Integer, ForeignKey("books.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    book_id = Column(
+        Integer, ForeignKey("books.id", ondelete="CASCADE"), nullable=False
+    )
     status = Column(String, nullable=False)
-    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+    created_at = Column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
     borrow_date = Column(TIMESTAMP(timezone=True), nullable=True)
     return_date = Column(TIMESTAMP(timezone=True), nullable=True)
     actual_return_date = Column(TIMESTAMP(timezone=True), nullable=True)

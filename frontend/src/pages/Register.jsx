@@ -9,7 +9,6 @@ export default function Register() {
     document.title = "Đăng ký";
   }, []);
 
-  const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [msv, setMsv] = useState("");
   const [password, setPassword] = useState("");
@@ -20,19 +19,13 @@ export default function Register() {
   const navigate = useNavigate();
 
   const validateForm = () => {
-    if (!email || !fullName || !msv || !password || !confirmPassword) {
+    if (!fullName || !msv || !password || !confirmPassword) {
       setError("Vui lòng điền đầy đủ thông tin");
       return false;
     }
 
     if (password !== confirmPassword) {
       setError("Mật khẩu xác nhận không khớp");
-      return false;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("Email không hợp lệ");
       return false;
     }
 
@@ -53,7 +46,6 @@ export default function Register() {
     }
 
     const userData = {
-      email,
       full_name: fullName,
       msv,
       password,
@@ -110,17 +102,6 @@ export default function Register() {
               className="form-control"
               value={msv}
               onChange={(e) => setMsv(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">Email</label>
-            <input
-              type="email"
-              className="form-control"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>

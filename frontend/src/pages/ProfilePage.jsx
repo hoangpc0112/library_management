@@ -28,7 +28,7 @@ const getBookStatus = (returnDate) => {
   const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
 
   if (daysLeft <= 0) {
-    return { class: "bg-danger", text: `Quá hạn ${Math.abs(daysLeft)} ngày` };
+    return { class: "bg-danger", text: `Quá hạn` };
   } else if (daysLeft <= 3) {
     return { class: "bg-warning", text: "Sắp hết hạn" };
   } else {
@@ -214,9 +214,7 @@ const UserStatistics = ({ borrowedBooks, returnedBooks, accountStatus }) => (
               {value}
             </h3>
             <p className="text-muted mt-2 mb-0">
-              {index === 0
-                ? "Trên tổng 5 quyển tối đa"
-                : index === 1
+              {index === 0 || index === 1
                 ? "Trong học kỳ này"
                 : accountStatus.text === "Tốt"
                 ? "Không có sách quá hạn"

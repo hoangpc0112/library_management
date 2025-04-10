@@ -118,7 +118,7 @@ const LoanManagement = () => {
         </p>
       ) : (
         <div className="table-responsive">
-          <table className="table table-striped table-bordered table-hover align-middle">
+          <table className="table table-striped table-bordered table-hover align-middle text-center">
             <thead>
               <tr>
                 <th scope="col">STT</th>

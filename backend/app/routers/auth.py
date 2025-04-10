@@ -33,11 +33,6 @@ def login(
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
-    if db.query(models.User).filter(models.User.email == user.email).first():
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Email đã được sử dụng."
-        )
-
     if db.query(models.User).filter(models.User.msv == user.msv).first():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="MSV đã được sử dụng."
@@ -58,6 +53,16 @@ def register(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
     user.created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     user.full_name = user.full_name.title()
     user.faculty = "An toàn thông tin" if major_code == "at" else "Công nghệ thông tin"
+
+    ten_list = user.full_name.split()
+    user.email = (
+        ten_list[-1]
+        + "".join(ten[0] for ten in ten_list[:-1])
+        + "."
+        + user.msv[:3]
+        + user.msv[5:]
+        + "@stu.ptit.edu.vn"
+    )
 
     new_user = models.User(**user.dict())
 

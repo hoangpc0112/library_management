@@ -76,13 +76,13 @@ const Statistics = () => {
     <div className="col-md-6">
       <div className="card shadow-sm rounded-3">
         <div className="card-header border-0">
-          <h5 className="mb-0 fw-bold">{title}</h5>
+          <h5 className="fw-bold my-2 text-center">{title}</h5>
         </div>
         <div className="card-body p-0">
           <div className="table-responsive">
-            <table className="table table-striped table-bordered mb-0">
+            <table className="table table-striped table-bordered mb-0 align-middle text-center">
               <thead>
-                <tr>
+                <tr className="align-middle">
                   {headers.map((header, idx) => (
                     <th key={idx}>{header}</th>
                   ))}

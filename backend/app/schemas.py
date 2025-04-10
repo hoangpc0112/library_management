@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class UserCreate(BaseModel):
-    email: EmailStr
+    email: Optional[EmailStr] = None
     password: str
     full_name: str
     is_admin: int = 0
@@ -142,6 +142,9 @@ class LibraryStats(BaseModel):
     overdue_books: int
     most_borrowed_books: List[TopBook]
     top_borrowers: List[TopBorrower]
+
+    class Config:
+        from_attributes = True
 
 
 class UserProfileOut(BaseModel):
