@@ -80,7 +80,7 @@ const EditBookForm = ({ book, onCancel, onSuccess }) => {
   };
 
   return (
-    <div className="card border-0 shadow-sm">
+    <div className="container card border-0 shadow-sm">
       <div className="card-body p-4">
         <h2 className="mb-4">Chỉnh sửa thông tin sách</h2>
 

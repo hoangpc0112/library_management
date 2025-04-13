@@ -67,7 +67,7 @@ const Statistics = () => {
         className={`card ${bgColor} shadow-lg rounded-3 mb-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-1`}
         style={{ border: "none" }}
       >
-        <div className="card-body d-flex align-items-center p-3">
+        <div className="card-body d-flex align-items-center p-3 text-white">
           <Icon size={48} className="me-3" />
           <div>
             <h6

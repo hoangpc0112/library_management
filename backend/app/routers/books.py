@@ -19,7 +19,11 @@ def get_all(
     query = db.query(models.Book)
 
     if search:
-        query = query.filter(func.lower(models.Book.title).like(f"%{search.lower()}%"))
+        query = query.filter(
+            func.lower(models.Book.title).like(f"%{search.lower()}%") |
+            func.lower(models.Book.author).like(f"%{search.lower()}%") |
+            func.lower(models.Book.publisher).like(f"%{search.lower()}%")
+        )
 
     if order.lower() == "desc":
         query = query.order_by(desc(getattr(models.Book, sort)))
