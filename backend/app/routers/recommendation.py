@@ -4,25 +4,45 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from typing import List, Optional
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 from sqlalchemy import func
 from datetime import datetime, timedelta
+from scipy.sparse import csr_matrix
+from sklearn.neighbors import NearestNeighbors
 
 router = APIRouter(prefix="/recommendation")
 
 
-def create_book_profile(book):
-    profile = f"{book.title} {book.author} {book.publisher} {str(book.published_year)}"
-    return profile
+def create_user_item_matrix(db: Session):
+    users = db.query(models.User).all()
+    books = db.query(models.Book).all()
 
+    user_ids = [user.id for user in users]
+    book_ids = [book.id for book in books]
 
-def compute_similarity_matrix(books):
-    book_profiles = [create_book_profile(book) for book in books]
-    vectorizer = TfidfVectorizer(stop_words="english")
-    tfidf_matrix = vectorizer.fit_transform(book_profiles)
-    similarity_matrix = cosine_similarity(tfidf_matrix)
-    return similarity_matrix
+    user_map = {id: idx for idx, id in enumerate(user_ids)}
+    book_map = {id: idx for idx, id in enumerate(book_ids)}
+
+    borrows = (
+        db.query(models.BorrowRequest)
+        .filter(models.BorrowRequest.status.in_(["approved", "returned"]))
+        .all()
+    )
+
+    rows = []
+    cols = []
+    data = []
+
+    for borrow in borrows:
+        if borrow.user_id in user_map and borrow.book_id in book_map:
+            rows.append(user_map[borrow.user_id])
+            cols.append(book_map[borrow.book_id])
+            data.append(1)
+
+    user_item_matrix = csr_matrix(
+        (data, (rows, cols)), shape=(len(user_ids), len(book_ids))
+    )
+
+    return user_item_matrix, user_map, book_map, user_ids, book_ids
 
 
 @router.get("/{book_id:int}", response_model=List[schemas.BookOut])
@@ -39,13 +59,36 @@ def get_similar_books(
             detail=f"Không tìm thấy sách được yêu cầu.",
         )
 
-    all_books = db.query(models.Book).all()
-    similarity_matrix = compute_similarity_matrix(all_books)
-    target_index = next(i for i, book in enumerate(all_books) if book.id == book_id)
-    similarity_scores = list(enumerate(similarity_matrix[target_index]))
-    similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
-    similar_book_indices = [i for i, _ in similarity_scores[1 : limit + 1]]
-    similar_books = [all_books[i] for i in similar_book_indices]
+    user_item_matrix, user_map, book_map, user_ids, book_ids = create_user_item_matrix(
+        db
+    )
+
+    if book_id not in book_map:
+        popular_books = (
+            db.query(models.Book)
+            .filter(models.Book.id != book_id)
+            .order_by(models.Book.average_rating.desc())
+            .limit(limit)
+            .all()
+        )
+        return popular_books
+
+    item_item_matrix = user_item_matrix.transpose().dot(user_item_matrix)
+
+    for i in range(item_item_matrix.shape[0]):
+        item_item_matrix[i, i] = 0
+
+    book_idx = book_map[book_id]
+    similarities = item_item_matrix[book_idx].toarray().flatten()
+    similar_indices = np.argsort(similarities)[::-1][:limit]
+    similar_book_ids = [book_ids[idx] for idx in similar_indices]
+    similar_books = []
+
+    for similar_id in similar_book_ids:
+        book = db.query(models.Book).filter(models.Book.id == similar_id).first()
+
+        if book:
+            similar_books.append(book)
 
     return similar_books
 
@@ -74,32 +117,77 @@ def get_user_recommendations(
         )
         return popular_books
 
-    all_books = db.query(models.Book).all()
-    similarity_matrix = compute_similarity_matrix(all_books)
+    user_item_matrix, user_map, book_map, user_ids, book_ids = create_user_item_matrix(
+        db
+    )
+
+    if current_user.id not in user_map:
+        popular_books = (
+            db.query(models.Book)
+            .order_by(models.Book.average_rating.desc())
+            .limit(limit)
+            .all()
+        )
+        return popular_books
+
+    model = NearestNeighbors(metric="cosine", algorithm="brute")
+    model.fit(user_item_matrix)
+    user_idx = user_map[current_user.id]
+    distances, indices = model.kneighbors(
+        user_item_matrix[user_idx].reshape(1, -1), n_neighbors=6
+    )
+    print("Distances:", distances)
+    print("Indices:", indices)
+    similar_user_indices = indices.flatten()[1:]
     borrowed_book_ids = [borrow.book_id for borrow in user_borrows]
+    recommendation_scores = {}
 
-    borrowed_indices = [
-        next((i for i, book in enumerate(all_books) if book.id == book_id), None)
-        for book_id in borrowed_book_ids
-    ]
+    for idx in similar_user_indices:
+        similar_user_id = user_ids[idx]
 
-    borrowed_indices = [i for i in borrowed_indices if i is not None]
-    recommendation_scores = np.zeros(len(all_books))
+        similar_user_borrows = (
+            db.query(models.BorrowRequest)
+            .filter(
+                models.BorrowRequest.user_id == similar_user_id,
+                models.BorrowRequest.status.in_(["approved", "returned"]),
+            )
+            .all()
+        )
 
-    for idx in borrowed_indices:
-        recommendation_scores += similarity_matrix[idx]
+        for borrow in similar_user_borrows:
+            if borrow.book_id not in borrowed_book_ids:
+                if borrow.book_id in recommendation_scores:
+                    recommendation_scores[borrow.book_id] += 1
+                else:
+                    recommendation_scores[borrow.book_id] = 1
 
-    book_scores = list(enumerate(recommendation_scores))
-    book_scores = sorted(book_scores, key=lambda x: x[1], reverse=True)
+    print("Recommendation Scores:", recommendation_scores)
 
-    recommended_indices = [
-        i for i, _ in book_scores if all_books[i].id not in borrowed_book_ids
-    ]
+    recommended_book_ids = sorted(
+        recommendation_scores.keys(),
+        key=lambda x: recommendation_scores[x],
+        reverse=True,
+    )[:limit]
 
-    recommended_indices = recommended_indices[:limit]
-    recommended_books = [all_books[i] for i in recommended_indices]
+    if len(recommended_book_ids) < limit:
+        popular_books = (
+            db.query(models.Book)
+            .filter(~models.Book.id.in_(borrowed_book_ids + recommended_book_ids))
+            .order_by(models.Book.average_rating.desc())
+            .limit(limit - len(recommended_book_ids))
+            .all()
+        )
+        popular_book_ids = [book.id for book in popular_books]
+        recommended_book_ids.extend(popular_book_ids)
 
-    return recommended_books
+    recommended_books = (
+        db.query(models.Book).filter(models.Book.id.in_(recommended_book_ids)).all()
+    )
+    sorted_books = sorted(
+        recommended_books, key=lambda book: recommended_book_ids.index(book.id)
+    )
+
+    return sorted_books
 
 
 @router.get("/trending", response_model=List[schemas.BookOut])
@@ -123,7 +211,8 @@ def get_trending_books(
     book_ids = [book_id for book_id, _ in recent_borrows]
 
     if not book_ids:
-        return []
+        res = db.query(models.Book).order_by(models.Book.id).limit(limit).all()
+        return res
 
     trending_books = db.query(models.Book).filter(models.Book.id.in_(book_ids)).all()
     sorted_books = sorted(trending_books, key=lambda book: book_ids.index(book.id))
