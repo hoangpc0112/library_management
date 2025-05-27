@@ -8,6 +8,9 @@ from sqlalchemy import func
 from datetime import datetime, timedelta
 from scipy.sparse import csr_matrix
 from sklearn.neighbors import NearestNeighbors
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import MinMaxScaler
 
 router = APIRouter(prefix="/recommendation")
 
@@ -136,15 +139,14 @@ def get_user_recommendations(
     distances, indices = model.kneighbors(
         user_item_matrix[user_idx].reshape(1, -1), n_neighbors=6
     )
-    print("Distances:", distances)
-    print("Indices:", indices)
+    print("Khoảng cách cosine:", distances)
+    print("user_id:", indices)
     similar_user_indices = indices.flatten()[1:]
     borrowed_book_ids = [borrow.book_id for borrow in user_borrows]
     recommendation_scores = {}
 
     for idx in similar_user_indices:
         similar_user_id = user_ids[idx]
-
         similar_user_borrows = (
             db.query(models.BorrowRequest)
             .filter(
@@ -161,7 +163,7 @@ def get_user_recommendations(
                 else:
                     recommendation_scores[borrow.book_id] = 1
 
-    print("Recommendation Scores:", recommendation_scores)
+    print("Số điểm gợi ý:", recommendation_scores)
 
     recommended_book_ids = sorted(
         recommendation_scores.keys(),
@@ -186,6 +188,32 @@ def get_user_recommendations(
     sorted_books = sorted(
         recommended_books, key=lambda book: recommended_book_ids.index(book.id)
     )
+
+    if len(sorted_books) > 1:
+        authors = [book.author or "unknown" for book in sorted_books]
+        published_years = [book.published_year or 0 for book in sorted_books]
+
+        vectorizer = TfidfVectorizer()
+        author_vectors = vectorizer.fit_transform(authors)
+
+        scaler = MinMaxScaler()
+        year_vectors = scaler.fit_transform(np.array(published_years).reshape(-1, 1))
+
+        feature_vectors = np.hstack((author_vectors.toarray(), year_vectors))
+        diversity_scores = []
+
+        for i in range(len(sorted_books)):
+            for j in range(i + 1, len(sorted_books)):
+                sim = cosine_similarity(
+                    feature_vectors[i].reshape(1, -1), feature_vectors[j].reshape(1, -1)
+                )[0][0]
+                diversity = 1 - sim
+                diversity_scores.append(diversity)
+
+        intra_list_diversity = np.mean(diversity_scores) if diversity_scores else 0
+        print(f"Intra-List Diversity (ILD): {intra_list_diversity:.4f}")
+
+    print("Các sách gợi ý:", [book.id for book in sorted_books])
 
     return sorted_books
 
