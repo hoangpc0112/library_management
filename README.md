@@ -50,8 +50,8 @@ This project is a **Library Management System** developed as a major assignment 
 ### Backend Setup
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/hoangpc0112/library_management.git
-    cd library_management
+    git clone https://github.com/hoangpc0112/library-management.git
+    cd library-management
     ```
 2.  **Navigate to the backend directory:**
     ```bash
@@ -103,4 +103,4 @@ This project is a **Library Management System** developed as a major assignment 
 ---
 ## 📬 Contact
 - Phạm Chính Hoàng - phamchinhhoang@gmail.com
-- Project Link: [https://github.com/hoangpc0112/library_management](https://github.com/hoangpc0112/library_management)
+- Project Link: [https://github.com/hoangpc0112/library-management](https://github.com/hoangpc0112/library-management)
